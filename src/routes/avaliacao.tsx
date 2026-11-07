@@ -37,6 +37,7 @@ function Avaliacao() {
   const question = QUIZ[step];
 
   const choose = (value: string) => {
+    if (!question) return;
     setAnswers((a) => ({ ...a, [question.id]: value }));
     setTimeout(() => setStep((s) => s + 1), 220);
   };
@@ -55,7 +56,7 @@ function Avaliacao() {
         </Link>
       </header>
 
-      {!done ? (
+      {!done && question ? (
         <main className="container-site flex flex-1 flex-col pb-16 pt-4 md:max-w-2xl">
           <div className="flex items-center gap-4">
             <span className="eyebrow shrink-0 text-muted-foreground">

@@ -88,7 +88,7 @@ const FAQ = [
 ];
 
 function DensityCurve() {
-  const pts = [
+  const pts: [number, number][] = [
     [12, 150],
     [80, 122],
     [140, 82],
