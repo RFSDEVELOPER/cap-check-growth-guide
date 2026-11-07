@@ -16,9 +16,8 @@ import { AFTER_LOGIN_KEY, safeRedirect } from "@/lib/safe-redirect";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    redirect: typeof search.redirect === "string" ? search.redirect : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } =>
+    typeof search["redirect"] === "string" ? { redirect: search["redirect"] } : {},
   head: () => ({
     meta: [
       { title: "Entrar — Cia Cap" },
@@ -117,7 +116,7 @@ function AuthPage() {
 
   async function onForgot(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const parsed = z.string().trim().email("E-mail inválido").safeParse(readForm(e).email);
+    const parsed = z.string().trim().email("E-mail inválido").safeParse(readForm(e)["email"]);
     if (!parsed.success) return setErrors({ email: "E-mail inválido" });
     setErrors({});
     setBusy(true);
@@ -204,8 +203,8 @@ function AuthPage() {
 
               {mode === "entrar" && (
                 <form onSubmit={onSignIn} className="grid gap-4" noValidate>
-                  <Field id="email" label="E-mail" type="email" autoComplete="email" error={errors.email} />
-                  <Field id="password" label="Senha" type="password" autoComplete="current-password" error={errors.password} />
+                  <Field id="email" label="E-mail" type="email" autoComplete="email" error={errors["email"]} />
+                  <Field id="password" label="Senha" type="password" autoComplete="current-password" error={errors["password"]} />
                   <button type="button" onClick={() => setMode("esqueci")} className="-mt-2 justify-self-end text-sm text-primary hover:underline">
                     Esqueci a senha
                   </button>
@@ -217,10 +216,10 @@ function AuthPage() {
 
               {mode === "criar" && (
                 <form onSubmit={onSignUp} className="grid gap-4" noValidate>
-                  <Field id="name" label="Nome completo" autoComplete="name" error={errors.name} />
-                  <Field id="email" label="E-mail" type="email" autoComplete="email" error={errors.email} />
-                  <Field id="phone" label="Telefone (WhatsApp)" type="tel" autoComplete="tel" placeholder="(11) 99999-9999" error={errors.phone} />
-                  <Field id="password" label="Senha" type="password" autoComplete="new-password" error={errors.password} />
+                  <Field id="name" label="Nome completo" autoComplete="name" error={errors["name"]} />
+                  <Field id="email" label="E-mail" type="email" autoComplete="email" error={errors["email"]} />
+                  <Field id="phone" label="Telefone (WhatsApp)" type="tel" autoComplete="tel" placeholder="(11) 99999-9999" error={errors["phone"]} />
+                  <Field id="password" label="Senha" type="password" autoComplete="new-password" error={errors["password"]} />
                   <Button type="submit" variant="pill" size="xl" disabled={busy}>
                     {busy && <Loader2 className="animate-spin" />} Criar conta
                   </Button>
@@ -232,7 +231,7 @@ function AuthPage() {
 
               {mode === "esqueci" && (
                 <form onSubmit={onForgot} className="mt-6 grid gap-4" noValidate>
-                  <Field id="email" label="E-mail da conta" type="email" autoComplete="email" error={errors.email} />
+                  <Field id="email" label="E-mail da conta" type="email" autoComplete="email" error={errors["email"]} />
                   <Button type="submit" variant="pill" size="xl" disabled={busy}>
                     {busy && <Loader2 className="animate-spin" />} Enviar link
                   </Button>
@@ -254,7 +253,7 @@ function Field({
   label,
   error,
   ...props
-}: { id: string; label: string; error?: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+}: { id: string; label: string; error?: string | undefined } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className="grid gap-1.5">
       <Label htmlFor={id}>{label}</Label>

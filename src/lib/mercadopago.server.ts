@@ -16,7 +16,7 @@ export async function mpRequest<T>(
   const res = await fetch(`${MP_API}${path}`, {
     method: init.method ?? "GET",
     headers,
-    body: init.body ? JSON.stringify(init.body) : undefined,
+    body: init.body ? JSON.stringify(init.body) : null,
   });
   if (!res.ok) {
     const text = await res.text();

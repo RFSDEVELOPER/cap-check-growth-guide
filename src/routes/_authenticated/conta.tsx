@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 import { formatBRL, getPlanById } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
 import { STATUS_LABEL, type OrderLine } from "@/lib/checkout";
@@ -42,9 +43,9 @@ const accountQuery = queryOptions({
 });
 
 export const Route = createFileRoute("/_authenticated/conta")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    pedido: typeof s.pedido === "string" ? s.pedido : undefined,
-    assinatura: typeof s.assinatura === "string" ? s.assinatura : undefined,
+  validateSearch: (s: Record<string, unknown>): { pedido?: string; assinatura?: string } => ({
+    ...(typeof s["pedido"] === "string" ? { pedido: s["pedido"] } : {}),
+    ...(typeof s["assinatura"] === "string" ? { assinatura: s["assinatura"] } : {}),
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(accountQuery),
   head: () => ({
@@ -272,7 +273,7 @@ function StatusPill({ status }: { status: string }) {
   );
 }
 
-type Profile = NonNullable<Awaited<ReturnType<typeof accountQuery.queryFn>>["profile"]>;
+type Profile = Tables<"profiles">;
 
 function ProfileForm({ profile }: { profile: Profile | null }) {
   const queryClient = useQueryClient();
@@ -321,7 +322,7 @@ function ProfileForm({ profile }: { profile: Profile | null }) {
     if (!auth.user) return setBusy(false);
     const { error } = await supabase.from("profiles").upsert({
       id: auth.user.id,
-      email: auth.user.email,
+      email: auth.user.email ?? null,
       ...parsed.data,
       state: parsed.data.state.toUpperCase(),
       complement: parsed.data.complement || null,
@@ -338,24 +339,24 @@ function ProfileForm({ profile }: { profile: Profile | null }) {
     <section id="endereco" className="scroll-mt-24 rounded-3xl border border-border bg-card p-6 md:p-7">
       <h2 className="text-xl">Meus dados e endereço de entrega</h2>
       <form ref={formRef} onSubmit={onSubmit} className="mt-5 grid gap-4 sm:grid-cols-6" noValidate>
-        <F name="full_name" label="Nome completo" def={v("full_name")} err={errors.full_name} span="sm:col-span-6" autoComplete="name" />
-        <F name="phone" label="Telefone (WhatsApp)" def={v("phone")} err={errors.phone} span="sm:col-span-3" type="tel" autoComplete="tel" />
+        <F name="full_name" label="Nome completo" def={v("full_name")} err={errors["full_name"]} span="sm:col-span-6" autoComplete="name" />
+        <F name="phone" label="Telefone (WhatsApp)" def={v("phone")} err={errors["phone"]} span="sm:col-span-3" type="tel" autoComplete="tel" />
         <F
           name="cep"
           label="CEP"
           def={v("cep")}
-          err={errors.cep}
+          err={errors["cep"]}
           span="sm:col-span-3"
           inputMode="numeric"
           autoComplete="postal-code"
           onBlur={(e) => lookupCep(e.currentTarget.value)}
         />
-        <F name="street" label="Rua" def={v("street")} err={errors.street} span="sm:col-span-4" autoComplete="address-line1" />
-        <F name="number" label="Número" def={v("number")} err={errors.number} span="sm:col-span-2" />
-        <F name="complement" label="Complemento" def={v("complement")} err={errors.complement} span="sm:col-span-3" />
-        <F name="neighborhood" label="Bairro" def={v("neighborhood")} err={errors.neighborhood} span="sm:col-span-3" />
-        <F name="city" label="Cidade" def={v("city")} err={errors.city} span="sm:col-span-4" autoComplete="address-level2" />
-        <F name="state" label="UF" def={v("state")} err={errors.state} span="sm:col-span-2" maxLength={2} autoComplete="address-level1" />
+        <F name="street" label="Rua" def={v("street")} err={errors["street"]} span="sm:col-span-4" autoComplete="address-line1" />
+        <F name="number" label="Número" def={v("number")} err={errors["number"]} span="sm:col-span-2" />
+        <F name="complement" label="Complemento" def={v("complement")} err={errors["complement"]} span="sm:col-span-3" />
+        <F name="neighborhood" label="Bairro" def={v("neighborhood")} err={errors["neighborhood"]} span="sm:col-span-3" />
+        <F name="city" label="Cidade" def={v("city")} err={errors["city"]} span="sm:col-span-4" autoComplete="address-level2" />
+        <F name="state" label="UF" def={v("state")} err={errors["state"]} span="sm:col-span-2" maxLength={2} autoComplete="address-level1" />
         <div className="sm:col-span-6">
           <Button type="submit" variant="pill" size="xl" disabled={busy} className="w-full sm:w-auto">
             {busy && <Loader2 className="animate-spin" />} Salvar dados
@@ -377,7 +378,7 @@ function F({
   name: string;
   label: string;
   def: string;
-  err?: string;
+  err?: string | undefined;
   span: string;
 } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
