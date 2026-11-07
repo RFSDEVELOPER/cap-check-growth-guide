@@ -1,7 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Menu, Sprout } from "lucide-react";
+import { ArrowRight, Menu, ShoppingBag, Sprout, UserRound } from "lucide-react";
 import { useState } from "react";
 
+import { useAuth } from "@/lib/auth";
+import { useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
@@ -21,8 +23,25 @@ export function Logo() {
   );
 }
 
+function CartLink() {
+  const { count } = useCart();
+  return (
+    <Button asChild variant="ghost" size="icon" className="relative" aria-label={`Carrinho, ${count} itens`}>
+      <Link to="/carrinho">
+        <ShoppingBag className="size-5" />
+        {count > 0 && (
+          <span className="absolute -right-0.5 -top-0.5 grid min-w-5 place-items-center rounded-full bg-copper px-1 font-mono text-[0.65rem] text-copper-foreground">
+            {count}
+          </span>
+        )}
+      </Link>
+    </Button>
+  );
+}
+
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const { user } = useAuth();
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-md">
@@ -38,8 +57,11 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Button variant="pill-outline" size="lg" className="px-5">
-            Já sou paciente
+          <CartLink />
+          <Button asChild variant="pill-outline" size="lg" className="px-5">
+            <Link to={user ? "/conta" : "/auth"}>
+              <UserRound /> {user ? "Minha conta" : "Já sou paciente"}
+            </Link>
           </Button>
           <Button asChild variant="pill" size="lg" className="px-5">
             <Link to="/avaliacao">
@@ -48,9 +70,11 @@ export function SiteHeader() {
           </Button>
         </div>
 
+        <div className="flex items-center gap-1 md:hidden">
+          <CartLink />
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden" aria-label="Abrir menu">
+            <Button variant="ghost" size="icon" aria-label="Abrir menu">
               <Menu className="size-5" />
             </Button>
           </SheetTrigger>
@@ -74,12 +98,15 @@ export function SiteHeader() {
                   Fazer avaliação <ArrowRight />
                 </Link>
               </Button>
-              <Button variant="pill-outline" size="xl">
-                Já sou paciente
+              <Button asChild variant="pill-outline" size="xl">
+                <Link to={user ? "/conta" : "/auth"} onClick={() => setOpen(false)}>
+                  {user ? "Minha conta" : "Já sou paciente"}
+                </Link>
               </Button>
             </div>
           </SheetContent>
         </Sheet>
+        </div>
       </div>
     </header>
   );

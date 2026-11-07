@@ -29,7 +29,7 @@ export function ProductCard({ product }: { product: AffiliateProduct }) {
         </p>
         <Button asChild variant="pill-outline" className="mt-5 h-11 w-full">
           <a href={product.url} target="_blank" rel="sponsored noopener noreferrer">
-            Ver preço na {product.store.toLowerCase()} <ArrowUpRight />
+            Ver no {product.store} <ArrowUpRight />
           </a>
         </Button>
       </div>
