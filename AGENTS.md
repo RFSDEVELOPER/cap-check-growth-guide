@@ -28,3 +28,8 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+
+- Plans, affiliate products and quiz scoring live in `src/lib/catalog.ts`; pages read from it so prices and links change in one place.
+- Affiliate links use `rel="sponsored"` and the site shows an affiliate disclosure, required for transparent affiliate sales.
