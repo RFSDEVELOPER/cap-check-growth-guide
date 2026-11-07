@@ -9,7 +9,7 @@ import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { useAuth } from "@/lib/auth";
 import { useCart } from "@/lib/cart";
-import { formatBRL, getShopProduct, SHIPPING_FEE } from "@/lib/catalog";
+import { getShopProduct, SHIPPING_FEE } from "@/lib/catalog";
 import { startCartCheckout } from "@/lib/payments.functions";
 
 export const Route = createFileRoute("/carrinho")({
@@ -135,7 +135,7 @@ function Carrinho() {
                 </div>
                 <div className="mt-2 flex justify-between border-t border-border pt-3 text-base font-medium">
                   <dt>Total</dt>
-                  <dd>{formatBRL(cart.total) === formatPrice(cart.total) ? formatBRL(cart.total) : formatPrice(cart.total)}</dd>
+                  <dd>{formatPrice(cart.total)}</dd>
                 </div>
               </dl>
 
