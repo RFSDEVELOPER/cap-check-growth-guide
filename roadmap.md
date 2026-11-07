@@ -7,3 +7,4 @@
 - [ ] Login de paciente — aguardando resposta sobre dados do perfil
 - [ ] Pagamento das assinaturas — aguardando escolha do meio de pagamento
 - [ ] Salvar respostas do questionário na conta do paciente (depende do login)
+- [ ] Loja própria com carrinho e finalização da compra (Shopify) — aguardando escolha de loja nova ou existente
