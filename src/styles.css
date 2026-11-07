@@ -219,3 +219,15 @@
     stroke-dashoffset: 0;
   }
 }
+
+/* Google sign-in button: Google's light theme, kept exact per their brand rules. */
+@utility google-btn {
+  background-color: #ffffff;
+  border: 1px solid #747775;
+  color: #1f1f1f;
+  font-family: "Google Sans", var(--font-sans, sans-serif);
+  line-height: 20px;
+  &:hover {
+    background-color: #f8f8f8;
+  }
+}
