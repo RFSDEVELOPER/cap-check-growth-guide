@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AvaliacaoRouteImport } from './routes/avaliacao'
+import { Route as LojaRouteImport } from './routes/loja'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AvaliacaoRoute = AvaliacaoRouteImport.update({
+  id: '/avaliacao',
+  path: '/avaliacao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LojaRoute = LojaRouteImport.update({
+  id: '/loja',
+  path: '/loja',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/avaliacao': typeof AvaliacaoRoute
+  '/loja': typeof LojaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/avaliacao': typeof AvaliacaoRoute
+  '/loja': typeof LojaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/avaliacao': typeof AvaliacaoRoute
+  '/loja': typeof LojaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/avaliacao' | '/loja'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/avaliacao' | '/loja'
+  id: '__root__' | '/' | '/avaliacao' | '/loja'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AvaliacaoRoute: typeof AvaliacaoRoute
+  LojaRoute: typeof LojaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/avaliacao': {
+      id: '/avaliacao'
+      path: '/avaliacao'
+      fullPath: '/avaliacao'
+      preLoaderRoute: typeof AvaliacaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/loja': {
+      id: '/loja'
+      path: '/loja'
+      fullPath: '/loja'
+      preLoaderRoute: typeof LojaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AvaliacaoRoute: AvaliacaoRoute,
+  LojaRoute: LojaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
