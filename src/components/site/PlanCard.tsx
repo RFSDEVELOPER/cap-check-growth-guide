@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Check } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { SubscribeButton } from "@/components/site/SubscribeButton";
 import { cn } from "@/lib/utils";
 import { formatBRL, type Plan } from "@/lib/catalog";
 
@@ -39,9 +39,24 @@ export function PlanCard({ plan, recommended }: { plan: Plan; recommended?: bool
           </li>
         ))}
       </ul>
-      <Button asChild variant={featured ? "copper" : "pill"} size="xl" className="mt-8 w-full">
-        <Link to="/avaliacao">Começar pela avaliação</Link>
-      </Button>
+      <SubscribeButton
+        planId={plan.id}
+        label={`Assinar o ${plan.name}`}
+        variant={featured ? "copper" : "pill"}
+        size="xl"
+        className="mt-8 w-full"
+      />
+      {!recommended && (
+        <Link
+          to="/avaliacao"
+          className={cn(
+            "mt-3 text-center text-sm underline-offset-4 hover:underline",
+            featured ? "text-forest-foreground/80" : "text-muted-foreground",
+          )}
+        >
+          Não sabe qual? Faça a avaliação
+        </Link>
+      )}
     </article>
   );
 }

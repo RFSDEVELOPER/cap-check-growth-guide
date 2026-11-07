@@ -1,13 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Info } from "lucide-react";
+import { ArrowRight, Info, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/site/ProductCard";
+import { ShopProductCard } from "@/components/site/ShopProductCard";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { cn } from "@/lib/utils";
-import { CATEGORY_LABEL, PRODUCTS, type ProductCategory } from "@/lib/catalog";
+import { CATEGORY_LABEL, PRODUCTS, SHOP_PRODUCTS, type ProductCategory } from "@/lib/catalog";
 
 export const Route = createFileRoute("/loja")({
   head: () => ({
@@ -45,10 +46,36 @@ function Loja() {
           Produtos que completam o tratamento
         </h1>
         <p className="mt-4 max-w-xl text-muted-foreground">
-          Selecionamos itens de lojas parceiras que combinam com a rotina de quem trata a queda.
+          Produtos da marca Cia Cap e itens selecionados de lojas parceiras para a rotina de quem
+          trata a queda.
         </p>
 
-        <div className="-mx-5 mt-10 flex gap-2 overflow-x-auto px-5 pb-2 md:mx-0 md:px-0">
+        <section className="mt-12">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-3xl">Produtos Cia Cap</h2>
+              <p className="mt-1 text-muted-foreground">
+                Compre aqui mesmo e pague com Pix, cartão ou boleto pelo Mercado Pago.
+              </p>
+            </div>
+            <Button asChild variant="pill-outline">
+              <Link to="/carrinho">
+                <ShoppingBag /> Ver carrinho
+              </Link>
+            </Button>
+          </div>
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {SHOP_PRODUCTS.map((p) => (
+              <ShopProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </section>
+
+        <h2 className="mt-20 text-3xl">Indicados nas lojas parceiras</h2>
+        <p className="mt-1 text-muted-foreground">
+          Itens que recomendamos no Mercado Livre e no TikTok Shop.
+        </p>
+        <div className="-mx-5 mt-6 flex gap-2 overflow-x-auto px-5 pb-2 md:mx-0 md:px-0">
           {filters.map((f) => (
             <button
               key={f}

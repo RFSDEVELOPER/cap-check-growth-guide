@@ -58,19 +58,80 @@ export const getPlan = (id: PlanId) => PLANS.find((p) => p.id === id)!;
 export const formatBRL = (value: number) =>
   value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
+export const getPlanById = (id: string) => PLANS.find((p) => p.id === id);
+
 export type ProductCategory = "tratamento" | "limpeza" | "suplemento" | "finalizacao";
+
+export type AffiliateStore = "Mercado Livre" | "TikTok Shop";
 
 export interface AffiliateProduct {
   id: string;
   name: string;
   description: string;
   category: ProductCategory;
-  store: string;
+  store: AffiliateStore;
   /** Replace with the real affiliate link. */
   url: string;
   image: string;
   badge?: string;
 }
+
+/* ---------------- Loja própria (carrinho + Mercado Pago) ---------------- */
+
+export interface ShopProduct {
+  id: string;
+  name: string;
+  description: string;
+  category: ProductCategory;
+  /** Price in BRL. The server recalculates totals from this list, never from the browser. */
+  price: number;
+  image: string;
+  badge?: string;
+}
+
+// Placeholder products and prices until the owner confirms the real ones.
+export const SHOP_PRODUCTS: ShopProduct[] = [
+  {
+    id: "shampoo-cia-cap",
+    name: "Shampoo Cia Cap 250 ml",
+    description: "Limpeza suave para o dia a dia de quem trata a queda.",
+    category: "limpeza",
+    price: 59,
+    image: shampoo,
+    badge: "Marca própria",
+  },
+  {
+    id: "tonico-cia-cap",
+    name: "Tônico Cia Cap 100 ml",
+    description: "Tônico para massagem no couro cabeludo, complementa a fórmula do plano.",
+    category: "tratamento",
+    price: 79,
+    image: tonico,
+  },
+  {
+    id: "kit-rotina",
+    name: "Kit Rotina: shampoo + tônico",
+    description: "Os dois produtos juntos, com desconto em relação à compra separada.",
+    category: "tratamento",
+    price: 119,
+    image: tonico,
+    badge: "Economize",
+  },
+  {
+    id: "kit-finalizacao",
+    name: "Kit Finalização: pomada + cera",
+    description: "Para dar volume e textura sem pesar nos fios.",
+    category: "finalizacao",
+    price: 69,
+    image: suplemento,
+  },
+];
+
+export const getShopProduct = (id: string) => SHOP_PRODUCTS.find((p) => p.id === id);
+
+/** Shipping fee in BRL charged on every order. Placeholder until the owner confirms. */
+export const SHIPPING_FEE = 0;
+export const MAX_QTY_PER_ITEM = 10;
 
 export const CATEGORY_LABEL: Record<ProductCategory, string> = {
   tratamento: "Tratamento",
@@ -86,7 +147,7 @@ export const PRODUCTS: AffiliateProduct[] = [
     name: "Minoxidil 5% tópico",
     description: "Solução capilar de venda livre em farmácias. Uso diário no couro cabeludo.",
     category: "tratamento",
-    store: "Loja parceira",
+    store: "Mercado Livre",
     url: "#",
     image: tonico,
     badge: "Mais vendido",
@@ -96,7 +157,7 @@ export const PRODUCTS: AffiliateProduct[] = [
     name: "Tônico fortalecedor",
     description: "Complemento ao tratamento, com ativos que ajudam na saúde do couro cabeludo.",
     category: "tratamento",
-    store: "Loja parceira",
+    store: "TikTok Shop",
     url: "#",
     image: tonico,
   },
@@ -105,7 +166,7 @@ export const PRODUCTS: AffiliateProduct[] = [
     name: "Shampoo antiqueda",
     description: "Limpeza suave que não resseca, ideal para quem usa minoxidil.",
     category: "limpeza",
-    store: "Loja parceira",
+    store: "Mercado Livre",
     url: "#",
     image: shampoo,
     badge: "Combina com o plano",
@@ -115,7 +176,7 @@ export const PRODUCTS: AffiliateProduct[] = [
     name: "Condicionador leve",
     description: "Hidrata o fio sem pesar a raiz.",
     category: "limpeza",
-    store: "Loja parceira",
+    store: "Mercado Livre",
     url: "#",
     image: shampoo,
   },
@@ -124,7 +185,7 @@ export const PRODUCTS: AffiliateProduct[] = [
     name: "Suplemento de biotina",
     description: "Vitaminas para cabelo e unhas. Converse com o médico antes de usar.",
     category: "suplemento",
-    store: "Loja parceira",
+    store: "TikTok Shop",
     url: "#",
     image: suplemento,
   },
@@ -133,7 +194,7 @@ export const PRODUCTS: AffiliateProduct[] = [
     name: "Pente de madeira",
     description: "Desembaraça sem quebrar o fio e sem eletricidade estática.",
     category: "finalizacao",
-    store: "Loja parceira",
+    store: "TikTok Shop",
     url: "#",
     image: suplemento,
   },
