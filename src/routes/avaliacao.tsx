@@ -1,6 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertTriangle, ArrowLeft, ArrowRight, Check, RotateCcw } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import { PENDING_QUIZ_KEY } from "@/lib/safe-redirect";
 
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -114,6 +118,53 @@ function Avaliacao() {
   );
 }
 
+function SaveResult({ answers }: { answers: QuizAnswers }) {
+  const { user, ready } = useAuth();
+  const [saved, setSaved] = useState(false);
+  const attempted = useRef(false);
+
+  useEffect(() => {
+    if (!ready || attempted.current) return;
+    attempted.current = true;
+    const result = recommendPlan(answers);
+    const row = {
+      answers,
+      plan: result.plan,
+      score: result.score,
+      needs_dermatologist: result.needsDermatologist,
+    };
+    if (!user) {
+      localStorage.setItem(PENDING_QUIZ_KEY, JSON.stringify(row));
+      return;
+    }
+    supabase
+      .from("quiz_results")
+      .insert({ ...row, user_id: user.id })
+      .then(({ error }) => {
+        if (!error) setSaved(true);
+      });
+  }, [ready, user, answers]);
+
+  if (!ready) return null;
+  if (user) {
+    return saved ? (
+      <p className="mx-auto mt-6 flex max-w-md items-center justify-center gap-2 text-sm text-primary">
+        <Check className="size-4" /> Resultado salvo na sua conta
+      </p>
+    ) : null;
+  }
+  return (
+    <div className="mx-auto mt-8 flex max-w-2xl flex-col items-center gap-3 rounded-2xl bg-secondary/70 p-5 text-center text-sm sm:flex-row sm:text-left">
+      <p className="flex-1">Crie sua conta para salvar esta avaliação e mostrar ao médico na consulta.</p>
+      <Button asChild variant="pill" className="shrink-0">
+        <Link to="/auth" search={{ redirect: "/conta" }}>
+          Salvar na minha conta
+        </Link>
+      </Button>
+    </div>
+  );
+}
+
 function Result({ answers, onRestart }: { answers: QuizAnswers; onRestart: () => void }) {
   const result = recommendPlan(answers);
   const plan = getPlan(result.plan);
@@ -132,6 +183,8 @@ function Result({ answers, onRestart }: { answers: QuizAnswers; onRestart: () =>
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-muted-foreground">{result.summary}</p>
       </div>
+
+      <SaveResult answers={answers} />
 
       {result.needsDermatologist && (
         <div className="mx-auto mt-8 flex max-w-2xl gap-3 rounded-2xl border border-copper/40 bg-copper/10 p-5 text-sm">
