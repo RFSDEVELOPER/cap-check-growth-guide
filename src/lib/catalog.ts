@@ -2,7 +2,11 @@ import tonico from "@/assets/produto-tonico.jpg";
 import shampoo from "@/assets/produto-shampoo.jpg";
 import suplemento from "@/assets/produto-suplemento.jpg";
 
+// Plans, products, affiliate links, shipping and coupons are managed in the admin area
+// (database). This file keeps the shared types, labels, price rules and the questionnaire.
+
 export type PlanId = "essencial" | "completo" | "avancado";
+export const PLAN_IDS: PlanId[] = ["essencial", "completo", "avancado"];
 
 export interface Plan {
   id: PlanId;
@@ -10,59 +14,28 @@ export interface Plan {
   price: number;
   tagline: string;
   features: string[];
-  highlight?: boolean;
+  highlight: boolean;
 }
 
-export const PLANS: Plan[] = [
-  {
-    id: "essencial",
-    name: "Essencial",
-    price: 89,
-    tagline: "Para começar cedo e frear a queda.",
-    features: [
-      "Avaliação médica por telemedicina",
-      "Fórmula tópica manipulada",
-      "Reposição mensal em casa",
-      "Acompanhamento por chat",
-    ],
-  },
-  {
-    id: "completo",
-    name: "Completo",
-    price: 149,
-    tagline: "O plano que a maioria escolhe.",
-    highlight: true,
-    features: [
-      "Tudo do Essencial",
-      "Tratamento oral, se indicado",
-      "Shampoo e tônico próprios",
-      "Reavaliação trimestral inclusa",
-    ],
-  },
-  {
-    id: "avancado",
-    name: "Avançado",
-    price: 219,
-    tagline: "Para quedas antigas ou extensas.",
-    features: [
-      "Tudo do Completo",
-      "Consulta dermatológica dedicada",
-      "Kit de finalização (pomada e cera)",
-      "Prioridade no suporte",
-    ],
-  },
-];
-
-export const getPlan = (id: PlanId) => PLANS.find((p) => p.id === id)!;
-
-export const formatBRL = (value: number) =>
-  value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
-
-export const getPlanById = (id: string) => PLANS.find((p) => p.id === id);
-
 export type ProductCategory = "tratamento" | "limpeza" | "suplemento" | "finalizacao";
-
 export type AffiliateStore = "Mercado Livre" | "TikTok Shop";
+export const AFFILIATE_STORES: AffiliateStore[] = ["Mercado Livre", "TikTok Shop"];
+
+export interface ShopProduct {
+  id: string;
+  name: string;
+  description: string;
+  category: ProductCategory;
+  /** Regular price in BRL. */
+  price: number;
+  /** Promotional price, used while promoUntil has not passed. */
+  promoPrice: number | null;
+  promoUntil: string | null;
+  stock: number;
+  deliveryDays: number;
+  image: string;
+  badge: string | null;
+}
 
 export interface AffiliateProduct {
   id: string;
@@ -70,67 +43,24 @@ export interface AffiliateProduct {
   description: string;
   category: ProductCategory;
   store: AffiliateStore;
-  /** Replace with the real affiliate link. */
   url: string;
   image: string;
-  badge?: string;
+  badge: string | null;
 }
 
-/* ---------------- Loja própria (carrinho + Mercado Pago) ---------------- */
-
-export interface ShopProduct {
-  id: string;
-  name: string;
-  description: string;
-  category: ProductCategory;
-  /** Price in BRL. The server recalculates totals from this list, never from the browser. */
-  price: number;
-  image: string;
-  badge?: string;
+export interface StoreSettings {
+  shippingFee: number;
+  freeShippingMin: number | null;
+  lowStockAlert: number;
 }
 
-// Placeholder products and prices until the owner confirms the real ones.
-export const SHOP_PRODUCTS: ShopProduct[] = [
-  {
-    id: "shampoo-cia-cap",
-    name: "Shampoo Cia Cap 250 ml",
-    description: "Limpeza suave para o dia a dia de quem trata a queda.",
-    category: "limpeza",
-    price: 59,
-    image: shampoo,
-    badge: "Marca própria",
-  },
-  {
-    id: "tonico-cia-cap",
-    name: "Tônico Cia Cap 100 ml",
-    description: "Tônico para massagem no couro cabeludo, complementa a fórmula do plano.",
-    category: "tratamento",
-    price: 79,
-    image: tonico,
-  },
-  {
-    id: "kit-rotina",
-    name: "Kit Rotina: shampoo + tônico",
-    description: "Os dois produtos juntos, com desconto em relação à compra separada.",
-    category: "tratamento",
-    price: 119,
-    image: tonico,
-    badge: "Economize",
-  },
-  {
-    id: "kit-finalizacao",
-    name: "Kit Finalização: pomada + cera",
-    description: "Para dar volume e textura sem pesar nos fios.",
-    category: "finalizacao",
-    price: 69,
-    image: suplemento,
-  },
-];
+export interface Storefront {
+  plans: Plan[];
+  products: ShopProduct[];
+  affiliates: AffiliateProduct[];
+  settings: StoreSettings;
+}
 
-export const getShopProduct = (id: string) => SHOP_PRODUCTS.find((p) => p.id === id);
-
-/** Shipping fee in BRL charged on every order. Placeholder until the owner confirms. */
-export const SHIPPING_FEE = 0;
 export const MAX_QTY_PER_ITEM = 10;
 
 export const CATEGORY_LABEL: Record<ProductCategory, string> = {
@@ -140,65 +70,52 @@ export const CATEGORY_LABEL: Record<ProductCategory, string> = {
   finalizacao: "Finalização",
 };
 
-// Affiliate links are placeholders until the owner provides the real ones.
-export const PRODUCTS: AffiliateProduct[] = [
-  {
-    id: "minoxidil-5",
-    name: "Minoxidil 5% tópico",
-    description: "Solução capilar de venda livre em farmácias. Uso diário no couro cabeludo.",
-    category: "tratamento",
-    store: "Mercado Livre",
-    url: "#",
-    image: tonico,
-    badge: "Mais vendido",
-  },
-  {
-    id: "tonico-capilar",
-    name: "Tônico fortalecedor",
-    description: "Complemento ao tratamento, com ativos que ajudam na saúde do couro cabeludo.",
-    category: "tratamento",
-    store: "TikTok Shop",
-    url: "#",
-    image: tonico,
-  },
-  {
-    id: "shampoo-antiqueda",
-    name: "Shampoo antiqueda",
-    description: "Limpeza suave que não resseca, ideal para quem usa minoxidil.",
-    category: "limpeza",
-    store: "Mercado Livre",
-    url: "#",
-    image: shampoo,
-    badge: "Combina com o plano",
-  },
-  {
-    id: "condicionador-leve",
-    name: "Condicionador leve",
-    description: "Hidrata o fio sem pesar a raiz.",
-    category: "limpeza",
-    store: "Mercado Livre",
-    url: "#",
-    image: shampoo,
-  },
-  {
-    id: "biotina",
-    name: "Suplemento de biotina",
-    description: "Vitaminas para cabelo e unhas. Converse com o médico antes de usar.",
-    category: "suplemento",
-    store: "TikTok Shop",
-    url: "#",
-    image: suplemento,
-  },
-  {
-    id: "pente-madeira",
-    name: "Pente de madeira",
-    description: "Desembaraça sem quebrar o fio e sem eletricidade estática.",
-    category: "finalizacao",
-    store: "TikTok Shop",
-    url: "#",
-    image: suplemento,
-  },
-];
+export const formatBRL = (value: number) =>
+  value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+
+export const formatPrice = (value: number) =>
+  value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+/** True while the product's promotional price applies. */
+export function hasActivePromo(
+  p: Pick<ShopProduct, "price" | "promoPrice" | "promoUntil">,
+  now: Date = new Date(),
+): boolean {
+  if (p.promoPrice == null || p.promoPrice <= 0 || p.promoPrice >= p.price) return false;
+  return !p.promoUntil || new Date(p.promoUntil).getTime() > now.getTime();
+}
+
+/** Price actually charged right now (promo price while it is valid). */
+export function effectivePrice(
+  p: Pick<ShopProduct, "price" | "promoPrice" | "promoUntil">,
+  now: Date = new Date(),
+): number {
+  return hasActivePromo(p, now) ? p.promoPrice! : p.price;
+}
+
+const FALLBACK_IMAGES: Record<string, string> = {
+  "shampoo-cia-cap": shampoo,
+  "tonico-cia-cap": tonico,
+  "kit-rotina": tonico,
+  "kit-finalizacao": suplemento,
+  "minoxidil-5": tonico,
+  "tonico-capilar": tonico,
+  "shampoo-antiqueda": shampoo,
+  "condicionador-leve": shampoo,
+  biotina: suplemento,
+  "pente-madeira": suplemento,
+};
+
+const CATEGORY_IMAGES: Record<ProductCategory, string> = {
+  tratamento: tonico,
+  limpeza: shampoo,
+  suplemento: suplemento,
+  finalizacao: suplemento,
+};
+
+/** Photo for a product without an uploaded image. */
+export const fallbackImage = (id: string, category: ProductCategory) =>
+  FALLBACK_IMAGES[id] ?? CATEGORY_IMAGES[category] ?? tonico;
 
 /* ---------------- Questionário ---------------- */
 
