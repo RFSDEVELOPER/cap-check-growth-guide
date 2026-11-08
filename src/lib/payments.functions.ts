@@ -2,13 +2,25 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { getPlanById } from "@/lib/catalog";
-import { buildOrder, planMonthlyAmount } from "@/lib/checkout";
+import {
+  addDaysISO,
+  buildOrder,
+  CheckoutError,
+  type CartLine,
+  type CheckoutErrorCode,
+  type OrderDraft,
+} from "@/lib/checkout";
 import { applyPreapproval, mpRequest, syncOrder } from "@/lib/mercadopago.server";
+import { loadCatalog, loadCoupon } from "@/lib/store.server";
 
-export type CheckoutResult =
-  | { url: string }
-  | { error: "pagamento_indisponivel" | "endereco_incompleto" | "ja_assinante" | "falha" };
+export type CheckoutFailure =
+  | "pagamento_indisponivel"
+  | "endereco_incompleto"
+  | "ja_assinante"
+  | "falha"
+  | CheckoutErrorCode;
+
+export type CheckoutResult = { url: string } | { error: CheckoutFailure; detail?: string };
 
 const originSchema = z
   .string()
@@ -16,24 +28,61 @@ const originSchema = z
   .max(200)
   .refine((u) => /^https?:\/\//.test(u), "Origem inválida");
 
+const cartSchema = z.object({
+  items: z
+    .array(z.object({ id: z.string().min(1).max(60), qty: z.number().int().min(1).max(10) }))
+    .min(1)
+    .max(20),
+  coupon: z
+    .string()
+    .trim()
+    .max(30)
+    .transform((c) => c.toUpperCase())
+    .optional(),
+});
+
+async function priceCart(items: CartLine[], couponCode: string | undefined): Promise<OrderDraft> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const catalog = await loadCatalog(supabaseAdmin, { withImages: false });
+  let coupon = null;
+  if (couponCode) {
+    coupon = await loadCoupon(supabaseAdmin, couponCode);
+    if (!coupon) throw new CheckoutError("cupom_invalido", "Cupom não encontrado");
+  }
+  return buildOrder(items, catalog, coupon);
+}
+
+export type QuoteResult = { order: OrderDraft } | { error: CheckoutFailure; detail?: string };
+
+/** Prices the cart on the server (promo prices, stock, coupon and shipping). */
+export const quoteCart = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => cartSchema.parse(input))
+  .handler(async ({ data }): Promise<QuoteResult> => {
+    try {
+      return { order: await priceCart(data.items, data.coupon || undefined) };
+    } catch (e) {
+      if (e instanceof CheckoutError) return { error: e.code, ...(e.detail ? { detail: e.detail } : {}) };
+      console.error("Quote failed", e);
+      return { error: "falha" };
+    }
+  });
+
 export const startCartCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) =>
-    z
-      .object({
-        items: z
-          .array(z.object({ id: z.string().min(1).max(60), qty: z.number().int().min(1).max(10) }))
-          .min(1)
-          .max(20),
-        origin: originSchema,
-      })
-      .parse(input),
-  )
+  .inputValidator((input) => cartSchema.extend({ origin: originSchema }).parse(input))
   .handler(async ({ data, context }): Promise<CheckoutResult> => {
     const token = process.env["MERCADOPAGO_ACCESS_TOKEN"];
     if (!token) return { error: "pagamento_indisponivel" };
 
-    const order = buildOrder(data.items);
+    let order: OrderDraft;
+    try {
+      order = await priceCart(data.items, data.coupon || undefined);
+    } catch (e) {
+      if (e instanceof CheckoutError) return { error: e.code, ...(e.detail ? { detail: e.detail } : {}) };
+      console.error("Pricing failed", e);
+      return { error: "falha" };
+    }
 
     const { data: profile } = await context.supabase
       .from("profiles")
@@ -55,6 +104,7 @@ export const startCartCheckout = createServerFn({ method: "POST" })
     const shipping = {
       name: profile.full_name,
       phone: profile.phone,
+      email: profile.email,
       cep: profile.cep,
       street: profile.street,
       number: profile.number,
@@ -69,8 +119,13 @@ export const startCartCheckout = createServerFn({ method: "POST" })
       .insert({
         user_id: context.userId,
         items: order.lines as never,
+        subtotal: order.subtotal,
+        discount: order.discount,
+        shipping_fee: order.shipping,
+        coupon_code: order.couponCode,
         total: order.total,
         shipping: shipping as never,
+        estimated_delivery: addDaysISO(new Date(), order.deliveryDays),
       })
       .select("id")
       .single();
@@ -78,6 +133,27 @@ export const startCartCheckout = createServerFn({ method: "POST" })
       console.error("Order insert failed", error);
       return { error: "falha" };
     }
+
+    // With a discount, send one line with the discounted products value so the
+    // Mercado Pago total always matches the order total.
+    const productItems =
+      order.discount > 0
+        ? [
+            {
+              id: "pedido",
+              title: `Pedido Cia Cap (${order.lines.reduce((s, l) => s + l.qty, 0)} itens, cupom ${order.couponCode})`,
+              quantity: 1,
+              unit_price: Math.round((order.subtotal - order.discount) * 100) / 100,
+              currency_id: "BRL",
+            },
+          ]
+        : order.lines.map((l) => ({
+            id: l.id,
+            title: l.name,
+            quantity: l.qty,
+            unit_price: l.unitPrice,
+            currency_id: "BRL",
+          }));
 
     try {
       const back = `${data.origin}/conta?pedido=${created.id}`;
@@ -89,13 +165,7 @@ export const startCartCheckout = createServerFn({ method: "POST" })
           idempotencyKey: created.id,
           body: {
             items: [
-              ...order.lines.map((l) => ({
-                id: l.id,
-                title: l.name,
-                quantity: l.qty,
-                unit_price: l.unitPrice,
-                currency_id: "BRL",
-              })),
+              ...productItems,
               ...(order.shipping > 0
                 ? [{ id: "frete", title: "Frete", quantity: 1, unit_price: order.shipping, currency_id: "BRL" }]
                 : []),
@@ -131,8 +201,15 @@ export const startPlanSubscription = createServerFn({ method: "POST" })
     const token = process.env["MERCADOPAGO_ACCESS_TOKEN"];
     if (!token) return { error: "pagamento_indisponivel" };
 
-    const plan = getPlanById(data.planId)!;
-    const amount = planMonthlyAmount(plan.id);
+    // Price comes from the plans table managed in the admin area.
+    const { data: plan } = await context.supabase
+      .from("plans")
+      .select("id, name, price, active")
+      .eq("id", data.planId)
+      .eq("active", true)
+      .maybeSingle();
+    if (!plan) return { error: "falha" };
+    const amount = Number(plan.price);
 
     const { data: active } = await context.supabase
       .from("subscriptions")
