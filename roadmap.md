@@ -7,8 +7,8 @@
 - [x] Salvar respostas do questionário na conta do paciente
 - [x] Loja própria com carrinho (sem Shopify)
 - [x] Assinatura mensal dos planos e pagamento do carrinho pelo Mercado Pago (código pronto)
-- [ ] Área administrativa: pedidos/entregas (status, rastreio, prazo), pagamentos, planos, assinaturas, produtos (preço, promoção, estoque, prazo), cupons, frete, clientes, links de afiliado
-- [ ] Definir qual conta do Raul vira administradora — aguardando resposta
+- [x] Área administrativa: pedidos/entregas (status, rastreio, prazo), pagamentos, planos, assinaturas, produtos (preço, promoção, estoque, prazo), cupons, frete, clientes, links de afiliado
+- [x] Conta raul.sistema.francisco@gmail.com como administradora
 - [ ] Ativar Mercado Pago — aguardando a chave de acesso (Access Token) do Raul
-- [ ] Links de afiliado reais (Mercado Livre e TikTok Shop) — aguardando links do Raul
-- [ ] Confirmar produtos próprios, preços e frete — aguardando Raul
+- [ ] Links de afiliado reais (Mercado Livre e TikTok Shop) — Raul cola pelo painel em Links de afiliado
+- [ ] Confirmar produtos próprios, preços, estoque e frete — Raul ajusta pelo painel
