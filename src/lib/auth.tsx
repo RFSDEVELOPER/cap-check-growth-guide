@@ -8,28 +8,45 @@ import { supabase } from "@/integrations/supabase/client";
 interface AuthState {
   user: User | null;
   ready: boolean;
+  /** Shows the admin link; the admin pages and data are protected separately on the server. */
+  isAdmin: boolean;
 }
 
-const AuthContext = createContext<AuthState>({ user: null, ready: false });
+const AuthContext = createContext<AuthState>({ user: null, ready: false, isAdmin: false });
+
+export async function checkIsAdmin(userId: string): Promise<boolean> {
+  const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+  return data === true;
+}
 
 /** The single place that listens to sign-in / sign-out for the whole site. */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [state, setState] = useState<AuthState>({ user: null, ready: false });
+  const [state, setState] = useState<AuthState>({ user: null, ready: false, isAdmin: false });
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setState({ user: data.session?.user ?? null, ready: true });
-    });
+    let alive = true;
+    const apply = (user: User | null) => {
+      setState((s) => ({ user, ready: true, isAdmin: user && s.user?.id === user.id ? s.isAdmin : false }));
+      if (user) {
+        checkIsAdmin(user.id)
+          .then((isAdmin) => alive && setState((s) => (s.user?.id === user.id ? { ...s, isAdmin } : s)))
+          .catch(() => undefined);
+      }
+    };
+    supabase.auth.getSession().then(({ data }) => apply(data.session?.user ?? null));
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
-      setState({ user: session?.user ?? null, ready: true });
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      apply(session?.user ?? null);
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
       else queryClient.clear();
     });
-    return () => data.subscription.unsubscribe();
+    return () => {
+      alive = false;
+      data.subscription.unsubscribe();
+    };
   }, [router, queryClient]);
 
   return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>;
