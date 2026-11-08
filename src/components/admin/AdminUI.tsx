@@ -82,7 +82,7 @@ export function Field({
   );
 }
 
-export function Stat({ label, value, hint, tone }: { label: string; value: ReactNode; hint?: string; tone?: Tone }) {
+export function Stat({ label, value, hint, tone }: { label: string; value: ReactNode; hint?: string; tone?: Tone | undefined }) {
   return (
     <div
       className={cn(

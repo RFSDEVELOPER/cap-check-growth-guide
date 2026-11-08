@@ -121,8 +121,8 @@ function AffiliateForm({ item, onDone }: { item: Row | null; onDone: () => void 
     const s = (k: string) => String(f.get(k) ?? "").trim();
     const name = s("name");
     const url = s("url") || "#";
-    if (name.length < 2) return setError("Informe o nome.");
-    if (url !== "#" && !/^https:\/\/[^\s]+$/i.test(url)) return setError("O link precisa começar com https://");
+    if (name.length < 2) { setError("Informe o nome."); return; }
+    if (url !== "#" && !/^https:\/\/[^\s]+$/i.test(url)) { setError("O link precisa começar com https://"); return; }
     const id = item?.id ?? slugify(name);
     setError(null);
     setBusy(true);
@@ -159,7 +159,7 @@ function AffiliateForm({ item, onDone }: { item: Row | null; onDone: () => void 
   async function remove() {
     if (!item || !confirm(`Excluir "${item.name}"?`)) return;
     const { error: dbError } = await supabase.from("affiliate_products").delete().eq("id", item.id);
-    if (dbError) return toast.error("Não foi possível excluir.");
+    if (dbError) { toast.error("Não foi possível excluir."); return; }
     onDone();
   }
 

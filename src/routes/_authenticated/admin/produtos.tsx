@@ -188,15 +188,15 @@ function ProductForm({ product, onDone }: { product: Row | null; onDone: () => v
     const deliveryDays = Math.floor(Number(s("delivery_days") || "7"));
     const promoUntil = s("promo_until");
 
-    if (name.length < 2) return setError("Informe o nome do produto.");
-    if (!price || price <= 0) return setError("Informe um preço válido.");
-    if (promoPrice != null && promoPrice >= price) return setError("O preço promocional precisa ser menor que o preço normal.");
-    if (!Number.isFinite(stock) || stock < 0) return setError("Estoque inválido.");
+    if (name.length < 2) { setError("Informe o nome do produto."); return; }
+    if (!price || price <= 0) { setError("Informe um preço válido."); return; }
+    if (promoPrice != null && promoPrice >= price) { setError("O preço promocional precisa ser menor que o preço normal."); return; }
+    if (!Number.isFinite(stock) || stock < 0) { setError("Estoque inválido."); return; }
     if (!Number.isFinite(deliveryDays) || deliveryDays < 1 || deliveryDays > 90)
-      return setError("Prazo de entrega entre 1 e 90 dias.");
+      { setError("Prazo de entrega entre 1 e 90 dias."); return; }
 
     const id = product?.id ?? slugify(name);
-    if (id.length < 2) return setError("Nome inválido.");
+    if (id.length < 2) { setError("Nome inválido."); return; }
     setError(null);
     setBusy(true);
     try {
@@ -235,7 +235,7 @@ function ProductForm({ product, onDone }: { product: Row | null; onDone: () => v
   async function remove() {
     if (!product || !confirm(`Excluir "${product.name}"? Pedidos antigos continuam guardados.`)) return;
     const { error: dbError } = await supabase.from("products").delete().eq("id", product.id);
-    if (dbError) return toast.error("Não foi possível excluir.");
+    if (dbError) { toast.error("Não foi possível excluir."); return; }
     toast.success("Produto excluído");
     onDone();
   }

@@ -18,9 +18,9 @@ export type SettingsRow = Tables<"store_settings">;
 
 export const PRODUCT_IMAGES_BUCKET = "product-images";
 
-function must<T>(res: { data: T | null; error: { message: string } | null }): T {
+function must<T>(res: { data: T; error: { message: string } | null }): T {
   if (res.error) throw new Error(res.error.message);
-  return res.data as T;
+  return res.data;
 }
 
 async function signedImages(rows: { id: string; category: string; image_url: string | null }[]) {

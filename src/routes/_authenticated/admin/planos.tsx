@@ -54,8 +54,8 @@ function PlanForm({ plan, activeCount }: { plan: PlanRow; activeCount: number })
     const f = new FormData(e.currentTarget);
     const s = (k: string) => String(f.get(k) ?? "").trim();
     const price = parseMoney(s("price"));
-    if (s("name").length < 2) return toast.error("Informe o nome do plano.");
-    if (!price || price <= 0) return toast.error("Informe um preço válido.");
+    if (s("name").length < 2) { toast.error("Informe o nome do plano."); return; }
+    if (!price || price <= 0) { toast.error("Informe um preço válido."); return; }
     const features = s("features")
       .split("\n")
       .map((l) => l.trim())
@@ -72,7 +72,7 @@ function PlanForm({ plan, activeCount }: { plan: PlanRow; activeCount: number })
       .update({ name: s("name"), price, tagline: s("tagline"), features, highlight, active })
       .eq("id", plan.id);
     setBusy(false);
-    if (error) return toast.error("Não foi possível salvar o plano.");
+    if (error) { toast.error("Não foi possível salvar o plano."); return; }
     toast.success(`Plano ${s("name")} salvo`);
     queryClient.invalidateQueries({ queryKey: ["admin", "plans"] });
     queryClient.invalidateQueries({ queryKey: ["storefront"] });

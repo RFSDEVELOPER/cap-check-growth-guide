@@ -30,14 +30,14 @@ function Configuracoes() {
     const freeMin = parseMoney(s("free_shipping_min"));
     const low = Math.floor(Number(s("low_stock_alert") || "5"));
     if (shipping < 0 || (freeMin != null && freeMin < 0) || !Number.isFinite(low) || low < 0)
-      return toast.error("Confira os valores.");
+      { toast.error("Confira os valores."); return; }
     setBusy(true);
     const { error } = await supabase
       .from("store_settings")
       .update({ shipping_fee: shipping, free_shipping_min: freeMin, low_stock_alert: low })
       .eq("id", true);
     setBusy(false);
-    if (error) return toast.error("Não foi possível salvar.");
+    if (error) { toast.error("Não foi possível salvar."); return; }
     toast.success("Configurações salvas");
     queryClient.invalidateQueries({ queryKey: ["admin", "settings"] });
     queryClient.invalidateQueries({ queryKey: ["storefront"] });

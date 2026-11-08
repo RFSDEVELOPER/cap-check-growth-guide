@@ -161,10 +161,10 @@ function CouponForm({ coupon, onDone }: { coupon: CouponRow | null; onDone: () =
     const value = kind === "frete" ? 0 : parseMoney(s("value"));
     const maxUses = s("max_uses") ? Math.floor(Number(s("max_uses"))) : null;
 
-    if (!/^[A-Z0-9_-]{3,30}$/.test(code)) return setError("Código com 3 a 30 letras ou números, sem espaços.");
-    if (kind !== "frete" && (!value || value <= 0)) return setError("Informe o valor do desconto.");
-    if (kind === "percent" && value! > 100) return setError("Percentual máximo é 100%.");
-    if (maxUses != null && (!Number.isFinite(maxUses) || maxUses < 1)) return setError("Limite de usos inválido.");
+    if (!/^[A-Z0-9_-]{3,30}$/.test(code)) { setError("Código com 3 a 30 letras ou números, sem espaços."); return; }
+    if (kind !== "frete" && (!value || value <= 0)) { setError("Informe o valor do desconto."); return; }
+    if (kind === "percent" && value! > 100) { setError("Percentual máximo é 100%."); return; }
+    if (maxUses != null && (!Number.isFinite(maxUses) || maxUses < 1)) { setError("Limite de usos inválido."); return; }
 
     const values = {
       code,
@@ -183,7 +183,7 @@ function CouponForm({ coupon, onDone }: { coupon: CouponRow | null; onDone: () =
       ? await supabase.from("coupons").update(values).eq("id", coupon.id)
       : await supabase.from("coupons").insert(values);
     setBusy(false);
-    if (dbError) return setError(dbError.code === "23505" ? "Já existe um cupom com esse código." : "Não foi possível salvar.");
+    if (dbError) { setError(dbError.code === "23505" ? "Já existe um cupom com esse código." : "Não foi possível salvar."); return; }
     toast.success("Cupom salvo");
     onDone();
   }
@@ -191,7 +191,7 @@ function CouponForm({ coupon, onDone }: { coupon: CouponRow | null; onDone: () =
   async function remove() {
     if (!coupon || !confirm(`Excluir o cupom ${coupon.code}?`)) return;
     const { error: dbError } = await supabase.from("coupons").delete().eq("id", coupon.id);
-    if (dbError) return toast.error("Não foi possível excluir.");
+    if (dbError) { toast.error("Não foi possível excluir."); return; }
     onDone();
   }
 

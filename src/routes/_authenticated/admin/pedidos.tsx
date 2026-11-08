@@ -188,7 +188,7 @@ function OrderDetail({ order, onDone }: { order: OrderRow; onDone: () => void })
       })
       .eq("id", order.id);
     setBusy(false);
-    if (error) return toast.error("Não foi possível salvar o pedido.");
+    if (error) { toast.error("Não foi possível salvar o pedido."); return; }
     toast.success("Pedido atualizado");
     queryClient.invalidateQueries({ queryKey: ["admin", "orders"] });
     onDone();
