@@ -3,7 +3,6 @@ import { ArrowLeft, Loader2, MailCheck } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import "@lovable.dev/cloud-auth-js/styles.css";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -127,11 +126,18 @@ function AuthPage() {
     setSentTo(parsed.data);
   }
 
-  async function social(provider: "google" | "lovable") {
-    const result = await lovable.auth.signInWithOAuth(provider, {
-      redirect_uri: window.location.origin + "/auth",
-    });
-    if (result.error) toast.error("Não foi possível entrar agora. Tente de novo.");
+  async function social(provider: "google" | "apple") {
+    setBusy(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth(provider, {
+        redirect_uri: window.location.origin + "/auth",
+      });
+      if (result.error) toast.error("Não foi possível entrar agora. Tente de novo.");
+    } catch {
+      toast.error("Não foi possível entrar agora. Tente de novo.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -168,31 +174,35 @@ function AuthPage() {
                 <>
                   <div className="mt-6 flex rounded-full bg-secondary p-1 text-sm">
                     {(["entrar", "criar"] as const).map((m) => (
-                      <button
+                      <Button
                         key={m}
+                        variant="ghost"
                         type="button"
+                        aria-pressed={mode === m}
                         onClick={() => { setMode(m); setErrors({}); }}
                         className={cn(
                           "flex-1 rounded-full py-2 transition-colors",
                           mode === m ? "bg-background text-foreground shadow-soft" : "text-muted-foreground",
                         )}
                       >
-                        {m === "entrar" ? "Já tenho conta" : "Sou novo"}
-                      </button>
+                        {m === "entrar" ? "Já sou cliente" : "Novo usuário"}
+                      </Button>
                     ))}
                   </div>
 
                   <div className="mt-6 grid gap-3">
-                    <button
+                     <Button
                       type="button"
+                       variant="ghost"
+                       disabled={busy}
                       onClick={() => social("google")}
                       className="google-btn flex h-11 w-full items-center justify-center gap-[10px] rounded-full px-3 text-sm font-medium"
                     >
                       <GoogleLogo /> Continuar com Google
-                    </button>
-                    <button type="button" className="lovable-auth-button" onClick={() => social("lovable")}>
-                      Continue with Lovable
-                    </button>
+                     </Button>
+                     <Button type="button" variant="apple" disabled={busy} className="h-11 w-full rounded-full px-6 text-[19px]" onClick={() => social("apple")}>
+                       Continue with Apple
+                     </Button>
                   </div>
 
                   <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
@@ -205,9 +215,9 @@ function AuthPage() {
                 <form onSubmit={onSignIn} className="grid gap-4" noValidate>
                   <Field id="email" label="E-mail" type="email" autoComplete="email" error={errors["email"]} />
                   <Field id="password" label="Senha" type="password" autoComplete="current-password" error={errors["password"]} />
-                  <button type="button" onClick={() => setMode("esqueci")} className="-mt-2 justify-self-end text-sm text-primary hover:underline">
+                  <Button variant="link" type="button" onClick={() => setMode("esqueci")} className="-mt-2 h-auto justify-self-end p-0 text-sm">
                     Esqueci a senha
-                  </button>
+                  </Button>
                   <Button type="submit" variant="pill" size="xl" disabled={busy}>
                     {busy && <Loader2 className="animate-spin" />} Entrar
                   </Button>

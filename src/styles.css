@@ -51,6 +51,8 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-apple-button: var(--apple-button);
+  --color-apple-button-foreground: var(--apple-button-foreground);
   --color-ring-offset-background: var(--background);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -71,6 +73,8 @@
 }
 
 :root {
+  --apple-button: #000000;
+  --apple-button-foreground: #ffffff;
   --radius: 1rem;
   --background: oklch(0.968 0.012 100);
   --foreground: oklch(0.22 0.025 150);
@@ -118,6 +122,8 @@
 }
 
 .dark {
+  --apple-button: #ffffff;
+  --apple-button-foreground: #000000;
   --background: oklch(0.2 0.025 155);
   --foreground: oklch(0.95 0.012 100);
   --card: oklch(0.24 0.03 155);

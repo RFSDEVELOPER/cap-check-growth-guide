@@ -67,7 +67,7 @@ export function SiteHeader() {
           <CartLink />
           <Button asChild variant="pill-outline" size="lg" className="px-5">
             <Link to={user ? "/conta" : "/auth"}>
-              <UserRound /> {user ? "Minha conta" : "Já sou paciente"}
+              <UserRound /> {user ? "Minha conta" : "Já sou cliente"}
             </Link>
           </Button>
           <Button asChild variant="pill" size="lg" className="px-5">
@@ -114,7 +114,7 @@ export function SiteHeader() {
               </Button>
               <Button asChild variant="pill-outline" size="xl">
                 <Link to={user ? "/conta" : "/auth"} onClick={() => setOpen(false)}>
-                  {user ? "Minha conta" : "Já sou paciente"}
+                  {user ? "Minha conta" : "Já sou cliente"}
                 </Link>
               </Button>
             </div>
