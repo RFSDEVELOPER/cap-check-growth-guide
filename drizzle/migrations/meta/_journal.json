@@ -8,6 +8,13 @@
       "when": 1794086847127,
       "tag": "0000_patients_orders_subscriptions",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794099409633,
+      "tag": "0001_admin_area_catalog_stock_coupons",
+      "breakpoints": true
     }
   ]
 }

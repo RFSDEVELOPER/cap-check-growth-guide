@@ -14,42 +14,258 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliate_products: {
+        Row: {
+          active: boolean
+          badge: string | null
+          category: string
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          name: string
+          sort_order: number
+          store: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          active?: boolean
+          badge?: string | null
+          category?: string
+          created_at?: string
+          description?: string
+          id: string
+          image_url?: string | null
+          name: string
+          sort_order?: number
+          store?: string
+          updated_at?: string
+          url?: string
+        }
+        Update: {
+          active?: boolean
+          badge?: string | null
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          sort_order?: number
+          store?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      coupons: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          description: string | null
+          ends_at: string | null
+          id: string
+          kind: string
+          max_uses: number | null
+          min_order: number
+          starts_at: string | null
+          used_count: number
+          value: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          kind?: string
+          max_uses?: number | null
+          min_order?: number
+          starts_at?: string | null
+          used_count?: number
+          value?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          kind?: string
+          max_uses?: number | null
+          min_order?: number
+          starts_at?: string | null
+          used_count?: number
+          value?: number
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
+          carrier: string | null
+          coupon_code: string | null
           created_at: string
+          customer_note: string | null
+          delivered_at: string | null
+          discount: number
+          estimated_delivery: string | null
+          fulfillment_status: string
           id: string
           items: Json
           mp_payment_id: string | null
           mp_preference_id: string | null
+          shipped_at: string | null
           shipping: Json | null
+          shipping_fee: number
           status: string
+          stock_applied: boolean
+          subtotal: number | null
           total: number
+          tracking_code: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          carrier?: string | null
+          coupon_code?: string | null
           created_at?: string
+          customer_note?: string | null
+          delivered_at?: string | null
+          discount?: number
+          estimated_delivery?: string | null
+          fulfillment_status?: string
           id?: string
           items: Json
           mp_payment_id?: string | null
           mp_preference_id?: string | null
+          shipped_at?: string | null
           shipping?: Json | null
+          shipping_fee?: number
           status?: string
+          stock_applied?: boolean
+          subtotal?: number | null
           total: number
+          tracking_code?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          carrier?: string | null
+          coupon_code?: string | null
           created_at?: string
+          customer_note?: string | null
+          delivered_at?: string | null
+          discount?: number
+          estimated_delivery?: string | null
+          fulfillment_status?: string
           id?: string
           items?: Json
           mp_payment_id?: string | null
           mp_preference_id?: string | null
+          shipped_at?: string | null
           shipping?: Json | null
+          shipping_fee?: number
           status?: string
+          stock_applied?: boolean
+          subtotal?: number | null
           total?: number
+          tracking_code?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      plans: {
+        Row: {
+          active: boolean
+          features: string[]
+          highlight: boolean
+          id: string
+          name: string
+          price: number
+          sort_order: number
+          tagline: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          features?: string[]
+          highlight?: boolean
+          id: string
+          name: string
+          price: number
+          sort_order?: number
+          tagline?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          features?: string[]
+          highlight?: boolean
+          id?: string
+          name?: string
+          price?: number
+          sort_order?: number
+          tagline?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          active: boolean
+          badge: string | null
+          category: string
+          created_at: string
+          delivery_days: number
+          description: string
+          id: string
+          image_url: string | null
+          name: string
+          price: number
+          promo_price: number | null
+          promo_until: string | null
+          sort_order: number
+          stock: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          badge?: string | null
+          category?: string
+          created_at?: string
+          delivery_days?: number
+          description?: string
+          id: string
+          image_url?: string | null
+          name: string
+          price: number
+          promo_price?: number | null
+          promo_until?: string | null
+          sort_order?: number
+          stock?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          badge?: string | null
+          category?: string
+          created_at?: string
+          delivery_days?: number
+          description?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          price?: number
+          promo_price?: number | null
+          promo_until?: string | null
+          sort_order?: number
+          stock?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -131,6 +347,30 @@ export type Database = {
         }
         Relationships: []
       }
+      store_settings: {
+        Row: {
+          free_shipping_min: number | null
+          id: boolean
+          low_stock_alert: number
+          shipping_fee: number
+          updated_at: string
+        }
+        Insert: {
+          free_shipping_min?: number | null
+          id?: boolean
+          low_stock_alert?: number
+          shipping_fee?: number
+          updated_at?: string
+        }
+        Update: {
+          free_shipping_min?: number | null
+          id?: boolean
+          low_stock_alert?: number
+          shipping_fee?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           amount: number
@@ -164,15 +404,43 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      finalize_paid_order: { Args: { _order_id: string }; Returns: undefined }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -299,6 +567,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
