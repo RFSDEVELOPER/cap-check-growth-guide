@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CATEGORY_LABEL, type AffiliateProduct } from "@/lib/catalog";
 
 export function ProductCard({ product }: { product: AffiliateProduct }) {
+  const hasLink = !!product.url && product.url !== "#";
   return (
     <article className="group flex flex-col overflow-hidden rounded-3xl border border-border bg-card transition-shadow hover:shadow-lift">
       <div className="relative aspect-square overflow-hidden bg-sage">
