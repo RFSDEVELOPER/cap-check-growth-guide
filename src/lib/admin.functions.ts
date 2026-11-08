@@ -4,9 +4,10 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { applyPreapproval, mpRequest, syncOrder } from "@/lib/mercadopago.server";
 
-type Ctx = { supabase: { rpc: (fn: "has_role", args: { _user_id: string; _role: "admin" }) => PromiseLike<{ data: boolean | null }> }; userId: string };
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 
-async function assertAdmin(context: Ctx) {
+async function assertAdmin(context: { supabase: SupabaseClient<Database>; userId: string }) {
   const { data } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
   if (!data) throw new Error("Acesso restrito à administração");
 }
@@ -15,7 +16,7 @@ async function assertAdmin(context: Ctx) {
 export const adminSyncPayments = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context as unknown as Ctx);
+    await assertAdmin(context);
     const token = process.env["MERCADOPAGO_ACCESS_TOKEN"];
     if (!token) return { ok: false as const, reason: "pagamento_indisponivel" as const, synced: 0 };
 
@@ -56,7 +57,7 @@ export const adminCancelSubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context as unknown as Ctx);
+    await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: sub } = await supabaseAdmin
       .from("subscriptions")
