@@ -13,9 +13,10 @@ import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
-import { formatBRL, getPlanById } from "@/lib/catalog";
+import { formatBRL } from "@/lib/catalog";
+import { storefrontQuery, useStorefront } from "@/lib/storefront";
 import { useCart } from "@/lib/cart";
-import { STATUS_LABEL, type OrderLine } from "@/lib/checkout";
+import { FULFILLMENT_LABEL, STATUS_LABEL, type FulfillmentStatus, type OrderLine } from "@/lib/checkout";
 import { syncMyPayments } from "@/lib/payments.functions";
 import { PENDING_QUIZ_KEY } from "@/lib/safe-redirect";
 import { cn } from "@/lib/utils";
@@ -47,7 +48,11 @@ export const Route = createFileRoute("/_authenticated/conta")({
     ...(typeof s["pedido"] === "string" ? { pedido: s["pedido"] } : {}),
     ...(typeof s["assinatura"] === "string" ? { assinatura: s["assinatura"] } : {}),
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(accountQuery),
+  loader: ({ context }) =>
+    Promise.all([
+      context.queryClient.ensureQueryData(accountQuery),
+      context.queryClient.ensureQueryData(storefrontQuery),
+    ]),
   head: () => ({
     meta: [
       { title: "Minha conta — Cia Cap" },
@@ -77,6 +82,8 @@ const dateBR = (iso: string) => new Date(iso).toLocaleDateString("pt-BR");
 
 function Conta() {
   const { data } = useSuspenseQuery(accountQuery);
+  const { plans } = useStorefront();
+  const planName = (id: string) => plans.find((p) => p.id === id)?.name ?? id;
   const { pedido, assinatura } = Route.useSearch();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -155,7 +162,7 @@ function Conta() {
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="font-display text-2xl">
-                      Plano {getPlanById(activeSub.plan_id)?.name ?? activeSub.plan_id}
+                      Plano {planName(activeSub.plan_id)}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {formatBRL(Number(activeSub.amount))}/mês · desde {dateBR(activeSub.created_at)}
@@ -179,7 +186,7 @@ function Conta() {
                   {data.quiz.map((q) => (
                     <li key={q.id} className="flex items-center justify-between py-3 text-sm">
                       <span>
-                        Indicação: <strong>{getPlanById(q.plan)?.name ?? q.plan}</strong>
+                        Indicação: <strong>{planName(q.plan)}</strong>
                         {q.needs_dermatologist && (
                           <span className="ml-2 text-copper">· recomenda dermatologista</span>
                         )}
@@ -214,7 +221,26 @@ function Conta() {
                         </p>
                         <p className="text-muted-foreground">
                           {dateBR(o.created_at)} · {formatBRL(Number(o.total))}
+                          {Number(o.discount) > 0 && ` · cupom ${o.coupon_code}`}
                         </p>
+                        {o.status === "pago" && (
+                          <p className="mt-1 text-muted-foreground">
+                            Entrega:{" "}
+                            <strong className="text-foreground">
+                              {FULFILLMENT_LABEL[o.fulfillment_status as FulfillmentStatus] ?? o.fulfillment_status}
+                            </strong>
+                            {o.estimated_delivery && o.fulfillment_status !== "entregue" &&
+                              ` · previsão ${new Date(`${o.estimated_delivery}T12:00:00`).toLocaleDateString("pt-BR")}`}
+                            {o.tracking_code && (
+                              <>
+                                {" · rastreio "}
+                                <span className="font-mono text-foreground">{o.tracking_code}</span>
+                                {o.carrier ? ` (${o.carrier})` : ""}
+                              </>
+                            )}
+                          </p>
+                        )}
+                        {o.customer_note && <p className="mt-1 text-copper">{o.customer_note}</p>}
                       </div>
                       <StatusPill status={o.status} />
                     </li>
