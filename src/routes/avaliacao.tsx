@@ -19,15 +19,15 @@ export const Route = createFileRoute("/avaliacao")({
   loader: ({ context }) => context.queryClient.ensureQueryData(storefrontQuery),
   head: () => ({
     meta: [
-      { title: "Avaliação capilar gratuita — Cia Cap" },
+      { title: "Questionário de rotina capilar — Cia Cap" },
       {
         name: "description",
-        content: "Responda 6 perguntas rápidas e descubra o plano de tratamento capilar indicado para o seu caso.",
+        content: "Responda 6 perguntas sobre sua rotina e conheça opções de cuidados capilares sem prescrição. Não substitui uma avaliação de saúde.",
       },
-      { property: "og:title", content: "Avaliação capilar gratuita — Cia Cap" },
+      { property: "og:title", content: "Questionário de rotina capilar — Cia Cap" },
       {
         property: "og:description",
-        content: "6 perguntas, 3 minutos e uma indicação de plano feita para o seu tipo de queda.",
+        content: "6 perguntas para conhecer suas preferências e explorar produtos para sua rotina capilar.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -157,7 +157,7 @@ function SaveResult({ answers }: { answers: QuizAnswers }) {
   }
   return (
     <div className="mx-auto mt-8 flex max-w-2xl flex-col items-center gap-3 rounded-2xl bg-secondary/70 p-5 text-center text-sm sm:flex-row sm:text-left">
-      <p className="flex-1">Crie sua conta para salvar esta avaliação e mostrar ao médico na consulta.</p>
+      <p className="flex-1">Crie sua conta para salvar suas respostas e consultar suas preferências de cuidados capilares.</p>
       <Button asChild variant="pill" className="shrink-0">
         <Link to="/auth" search={{ redirect: "/conta" }}>
           Salvar na minha conta
@@ -179,10 +179,10 @@ function Result({ answers, onRestart }: { answers: QuizAnswers; onRestart: () =>
     <main className="container-site animate-rise pb-20 pt-6">
       <div className="mx-auto max-w-2xl text-center">
         <span className="eyebrow rounded-full bg-sage px-3 py-1.5 text-sage-foreground">
-          Seu resultado
+          Sua rotina capilar
         </span>
         <h1 className="mt-6 text-4xl leading-tight md:text-5xl">
-          Indicamos o plano <em className="font-light italic text-copper">{plan?.name ?? result.plan}</em>
+          Uma opção de rotina: plano <em className="font-light italic text-copper">{plan?.name ?? result.plan}</em>
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-muted-foreground">{result.summary}</p>
       </div>
@@ -193,22 +193,22 @@ function Result({ answers, onRestart }: { answers: QuizAnswers; onRestart: () =>
         <div className="mx-auto mt-8 flex max-w-2xl gap-3 rounded-2xl border border-copper/40 bg-copper/10 p-5 text-sm">
           <AlertTriangle className="size-5 shrink-0 text-copper" />
           <p>
-            Esse tipo de queda merece uma conversa com dermatologista. O plano Avançado já inclui
-            essa consulta.
+            Falhas repentinas ou queda muito rápida merecem avaliação por um profissional de saúde.
+            Não oferecemos consultas nem receitas; os produtos não substituem esse cuidado.
           </p>
         </div>
       )}
 
       <div className="mx-auto mt-12 max-w-md">
-        {plan && <PlanCard plan={plan} recommended />}
+        {plan && <PlanCard plan={plan} recommended productCopy />}
       </div>
 
       <p className="mx-auto mt-6 max-w-md text-center text-xs text-muted-foreground">
-        Esta é uma indicação inicial. O tratamento final é definido pelo médico na consulta.
+        Sugestão de rotina, não diagnóstico ou prescrição. Confira o rótulo e as restrições de cada produto. Não há garantia de resultados.
       </p>
 
       <section className="mt-20">
-        <h2 className="text-center text-3xl">Combina com o seu plano</h2>
+        <h2 className="text-center text-3xl">Produtos para conhecer</h2>
         <div className="mx-auto mt-8 grid max-w-5xl gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {products.map((p) => (
             <ProductCard key={p.id} product={p} />
@@ -218,7 +218,7 @@ function Result({ answers, onRestart }: { answers: QuizAnswers; onRestart: () =>
 
       <div className="mt-12 text-center">
         <Button variant="ghost" onClick={onRestart}>
-          <RotateCcw /> Refazer avaliação
+          <RotateCcw /> Refazer questionário
         </Button>
         <Button asChild variant="link">
           <Link to="/loja">

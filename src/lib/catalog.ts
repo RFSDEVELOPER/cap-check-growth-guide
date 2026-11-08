@@ -168,27 +168,27 @@ export const QUIZ: QuizQuestion[] = [
   },
   {
     id: "historico",
-    title: "Você já tentou algum tratamento?",
+    title: "Quais cuidados capilares você já experimentou?",
     options: [
-      { value: "nunca", label: "Nunca tratei", points: 0 },
-      { value: "caseiro", label: "Só shampoos e vitaminas", points: 0 },
-      { value: "minoxidil", label: "Já usei minoxidil", points: 1 },
-      { value: "sem-resultado", label: "Tratei e não vi resultado", points: 2 },
+      { value: "nunca", label: "Ainda não tenho uma rotina", points: 0 },
+      { value: "caseiro", label: "Shampoos e suplementos", points: 0 },
+      { value: "minoxidil", label: "Já usei produtos para o couro cabeludo", points: 1 },
+      { value: "sem-resultado", label: "Já experimentei cuidados e quero outras opções", points: 2 },
     ],
   },
   {
     id: "objetivo",
     title: "O que você mais quer agora?",
     options: [
-      { value: "parar", label: "Parar a queda", points: 0 },
-      { value: "densidade", label: "Recuperar volume", points: 1 },
-      { value: "manter", label: "Manter o que tenho", points: 0 },
+      { value: "parar", label: "Cuidar dos fios e do couro cabeludo", points: 0 },
+      { value: "densidade", label: "Cuidar da aparência e do volume", points: 1 },
+      { value: "manter", label: "Manter minha rotina de cuidados", points: 0 },
     ],
   },
   {
     id: "sinais",
     title: "Você notou algum destes sinais?",
-    hint: "Isso ajuda o médico a priorizar seu caso.",
+    hint: "Alguns sinais precisam de avaliação por um profissional de saúde. Este questionário não faz diagnóstico.",
     options: [
       { value: "nenhum", label: "Nenhum deles", points: 0 },
       { value: "coceira", label: "Coceira ou caspa forte", points: 1 },
@@ -225,7 +225,7 @@ export function recommendPlan(answers: QuizAnswers): QuizResult {
       score,
       needsDermatologist,
       summary:
-        "Falhas redondas ou queda muito rápida podem ter outras causas. O ideal é passar por um dermatologista antes de qualquer fórmula.",
+        "Falhas repentinas ou queda muito rápida precisam de avaliação por um profissional de saúde. Produtos de cuidado capilar não substituem essa avaliação.",
     };
   }
   if (score <= 3) {
@@ -233,7 +233,7 @@ export function recommendPlan(answers: QuizAnswers): QuizResult {
       plan: "essencial",
       score,
       needsDermatologist,
-      summary: "Sua queda parece estar no começo. Tratar cedo costuma dar os melhores resultados.",
+      summary: "Pelas suas respostas, uma rotina simples de cuidados pode combinar com suas preferências. Confira a composição e o modo de uso dos produtos.",
     };
   }
   if (score <= 6) {
@@ -242,7 +242,7 @@ export function recommendPlan(answers: QuizAnswers): QuizResult {
       score,
       needsDermatologist,
       summary:
-        "Seu caso pede um cuidado combinado: fórmula tópica, possível tratamento oral e rotina de cuidados.",
+        "Suas respostas apontam interesse em combinar cuidados de limpeza e produtos para os fios e o couro cabeludo, respeitando as indicações de cada rótulo.",
     };
   }
   return {
@@ -250,6 +250,6 @@ export function recommendPlan(answers: QuizAnswers): QuizResult {
     score,
     needsDermatologist,
     summary:
-      "Sua queda é mais antiga ou extensa. Um acompanhamento dermatológico dedicado faz diferença aqui.",
+      "Você relatou mudanças mais antigas ou em diferentes áreas. Explore opções de cuidados sem prescrição, mas procure orientação profissional para investigar a queda persistente.",
   };
 }
