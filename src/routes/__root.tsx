@@ -84,16 +84,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Cia Cap — Saúde capilar com acompanhamento médico" },
+      { title: "Cia Cap — Cuidados capilares sem prescrição" },
       {
         name: "description",
-        content: "Avaliação médica por telemedicina e tratamento capilar manipulado entregue em casa.",
+        content: "Dermocosméticos, tônicos, shampoos estimulantes e suplementos para sua rotina capilar.",
       },
       { name: "author", content: "Cia Cap" },
-      { property: "og:title", content: "Cia Cap — Saúde capilar com acompanhamento médico" },
+      { property: "og:title", content: "Cia Cap — Cuidados capilares sem prescrição" },
       {
         property: "og:description",
-        content: "Avaliação médica por telemedicina e tratamento capilar manipulado entregue em casa.",
+        content: "Dermocosméticos, tônicos, shampoos estimulantes e suplementos para sua rotina capilar.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

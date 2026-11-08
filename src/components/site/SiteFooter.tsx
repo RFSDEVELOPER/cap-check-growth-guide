@@ -9,8 +9,8 @@ export function SiteFooter() {
         <div className="max-w-sm">
           <Logo />
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            Saúde capilar com acompanhamento médico. O tratamento prescrito depende de avaliação
-            individual. Resultados variam de pessoa para pessoa.
+            Dermocosméticos, tônicos, shampoos estimulantes e suplementos sem prescrição médica.
+            Siga as orientações do rótulo. Produtos não substituem cuidados de saúde e não garantem resultados.
           </p>
         </div>
         <div className="text-sm">
@@ -19,7 +19,7 @@ export function SiteFooter() {
             <li><a href="/#como-funciona" className="hover:text-copper">Como funciona</a></li>
             <li><a href="/#planos" className="hover:text-copper">Planos</a></li>
             <li><Link to="/loja" className="hover:text-copper">Loja</Link></li>
-            <li><Link to="/avaliacao" className="hover:text-copper">Avaliação</Link></li>
+            <li><Link to="/avaliacao" className="hover:text-copper">Questionário capilar</Link></li>
           </ul>
         </div>
         <div className="text-sm">

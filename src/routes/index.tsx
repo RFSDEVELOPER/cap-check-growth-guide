@@ -1,12 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
-  BadgeCheck,
   Package,
   RefreshCw,
   ShieldCheck,
   Star,
-  Stethoscope,
+  Sparkles,
 } from "lucide-react";
 
 import heroImg from "@/assets/hero-cabelo.jpg";
@@ -27,16 +26,16 @@ export const Route = createFileRoute("/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(storefrontQuery),
   head: () => ({
     meta: [
-      { title: "Cia Cap — Tratamento para queda de cabelo com médico" },
+      { title: "Cia Cap — Produtos capilares sem prescrição" },
       {
         name: "description",
         content:
-          "Faça uma avaliação de 3 minutos, fale com um médico por telemedicina e receba seu tratamento capilar manipulado em casa.",
+          "Dermocosméticos, tônicos, shampoos estimulantes e suplementos para sua rotina capilar. Conheça os produtos e responda ao questionário de preferências.",
       },
-      { property: "og:title", content: "Cia Cap — Tratamento para queda de cabelo com médico" },
+      { property: "og:title", content: "Cia Cap — Produtos capilares sem prescrição" },
       {
         property: "og:description",
-        content: "Avaliação gratuita, médico parceiro e fórmula manipulada entregue todo mês.",
+        content: "Produtos capilares sem prescrição e um questionário gratuito para conhecer sua rotina.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -46,90 +45,47 @@ export const Route = createFileRoute("/")({
 });
 
 const TRUST = [
-  { icon: Stethoscope, label: "Avaliação por telemedicina" },
-  { icon: ShieldCheck, label: "Farmácias credenciadas" },
-  { icon: Package, label: "Entrega recorrente em casa" },
+  { icon: Sparkles, label: "Cuidados sem prescrição" },
+  { icon: ShieldCheck, label: "Dermocosméticos e suplementos" },
+  { icon: Package, label: "Entrega dos produtos em casa" },
   { icon: RefreshCw, label: "Sem fidelidade" },
 ];
 
 const STEPS = [
-  { week: "Semana 1", title: "Avaliação", text: "Você responde o questionário e um médico parceiro avalia seu caso." },
-  { week: "Semana 2", title: "Início", text: "A fórmula prescrita é manipulada e enviada por farmácia credenciada." },
-  { week: "Semana 8", title: "Primeiros sinais", text: "A maioria dos pacientes relata menos queda no travesseiro e no banho." },
-  { week: "Semana 16+", title: "Resultado visível", text: "Reavaliação médica e ajuste do plano conforme sua evolução." },
+  { week: "Passo 1", title: "Sua rotina", text: "Responda ao questionário sobre seus hábitos e preferências de cuidados capilares." },
+  { week: "Passo 2", title: "Escolha", text: "Confira a composição, o modo de uso e as informações de cada produto na loja." },
+  { week: "Passo 3", title: "Entrega", text: "Finalize sua compra e acompanhe o status e o prazo do pedido na sua conta." },
+  { week: "Passo 4", title: "Cuidado diário", text: "Use os produtos conforme o rótulo e respeite as orientações e restrições de uso." },
 ];
 
 const TESTIMONIALS = [
-  { quote: "Comecei achando que era propaganda, mas o acompanhamento médico fez diferença. Sigo há 4 meses.", name: "Rafael M., 34" },
-  { quote: "Não precisei sair de casa para a consulta. A farmácia manda certinho todo mês.", name: "Carla S., 29" },
-  { quote: "Ter avaliação de verdade antes de qualquer fórmula foi o que me convenceu.", name: "Diego P., 41" },
+  { quote: "Dermocosméticos e tônicos podem fazer parte dos cuidados com os fios e o couro cabeludo, conforme a indicação de cada produto.", name: "Dermocosméticos e tônicos" },
+  { quote: "Escolha seu shampoo considerando a limpeza, as necessidades do couro cabeludo e as orientações de uso.", name: "Shampoos estimulantes" },
+  { quote: "Suplementos complementam a alimentação quando indicados e não substituem uma dieta equilibrada ou cuidados de saúde.", name: "Suplementos" },
 ];
 
 const FAQ = [
   {
-    q: "Preciso de receita médica?",
-    a: "Depende do tratamento. Alguns ativos, como o minoxidil oral, exigem prescrição. Por isso todo plano começa com a avaliação de um médico parceiro por telemedicina.",
+    q: "Preciso de receita médica para comprar?",
+    a: "Os produtos apresentados nesta proposta são dermocosméticos, tônicos, shampoos estimulantes e suplementos sem exigência de receita médica. Não oferecemos consultas por telemedicina nem emissão de receitas. Confira sempre a composição, a indicação e as restrições de cada produto.",
   },
   {
-    q: "Como a fórmula chega até mim?",
-    a: "Depois da prescrição, uma farmácia de manipulação credenciada prepara sua fórmula e envia para o seu endereço. A reposição acontece automaticamente todo mês.",
+    q: "Como os produtos chegam até mim?",
+    a: "Os produtos Cia Cap são comprados pelo carrinho e enviados para o endereço informado no pedido. O prazo é mostrado na compra; você acompanha o status, a previsão de entrega e o rastreio, quando disponível, na sua conta. Nos links de afiliados, a compra e a entrega são feitas pela loja parceira.",
   },
   {
-    q: "Posso cancelar quando quiser?",
-    a: "Sim. Não existe fidelidade: você cancela pela sua área de paciente e não há cobrança no mês seguinte.",
+    q: "Posso cancelar a assinatura quando quiser?",
+    a: "Sim. Os planos não têm fidelidade. Você pode solicitar o cancelamento pela sua conta para interromper as próximas cobranças. Confira as condições da assinatura antes de contratar.",
   },
   {
-    q: "Funciona para queda em qualquer fase?",
-    a: "Quanto antes começar, melhor. Em casos antigos ou extensos, o médico pode indicar o plano Avançado com consulta dermatológica dedicada.",
+    q: "Os produtos garantem o fim da queda ou o crescimento do cabelo?",
+    a: "Não. Os efeitos dependem do produto e de características individuais; não prometemos cura, crescimento ou resultados garantidos. O questionário oferece sugestões de cuidados, não diagnóstico. Queda repentina, falhas, dor ou irritação persistente precisam de avaliação por um profissional de saúde.",
   },
   {
-    q: "O que são os produtos da loja?",
-    a: "São itens que complementam o tratamento, vendidos por lojas parceiras. Alguns links são de afiliados e podemos receber uma comissão, sem custo extra para você.",
+    q: "O que encontro na loja?",
+    a: "Produtos Cia Cap e opções de lojas parceiras, incluindo dermocosméticos, tônicos, shampoos estimulantes e suplementos. Alguns links são de afiliados: podemos receber uma comissão, sem custo extra para você. Consulte o rótulo e as precauções de uso, especialmente para suplementos.",
   },
 ];
-
-function DensityCurve() {
-  const pts: [number, number][] = [
-    [12, 150],
-    [80, 122],
-    [140, 82],
-    [200, 50],
-    [268, 30],
-  ];
-  return (
-    <div className="rounded-2xl border border-border/80 bg-background/90 p-4 shadow-soft backdrop-blur">
-      <p className="eyebrow text-muted-foreground">Densidade relatada</p>
-      <svg viewBox="0 0 280 170" className="mt-2 h-28 w-full" aria-hidden="true">
-        <defs>
-          <linearGradient id="curve" x1="0" x2="1">
-            <stop offset="0%" stopColor="var(--chart-2)" />
-            <stop offset="100%" stopColor="var(--copper)" />
-          </linearGradient>
-        </defs>
-        {[40, 80, 120, 160].map((y) => (
-          <line key={y} x1="0" x2="280" y1={y} y2={y} stroke="var(--border)" strokeWidth="1" />
-        ))}
-        <path
-          d="M12 150 C 50 145, 60 130, 80 122 S 120 92, 140 82 S 180 56, 200 50 S 250 34, 268 30"
-          fill="none"
-          stroke="url(#curve)"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeDasharray="600"
-          className="animate-draw"
-        />
-        {pts.map(([x, y], i) => (
-          <g key={i}>
-            <circle cx={x} cy={y} r="4.5" fill="var(--background)" stroke="var(--primary)" strokeWidth="2" />
-            <text x={x} y={y - 10} textAnchor="middle" className="fill-muted-foreground font-mono text-[9px]">
-              S{i * 6}
-            </text>
-          </g>
-        ))}
-      </svg>
-    </div>
-  );
-}
 
 function Index() {
   const { plans: PLANS, affiliates: PRODUCTS } = useStorefront();
@@ -146,20 +102,19 @@ function Index() {
         <section className="container-site grid items-center gap-10 pb-16 pt-10 md:grid-cols-[1.1fr_1fr] md:gap-14 md:pb-24 md:pt-16">
           <div className="animate-rise">
             <span className="eyebrow inline-flex rounded-full bg-sage px-3 py-1.5 text-sage-foreground">
-              Saúde capilar com médico
+              Cuidados capilares sem prescrição
             </span>
             <h1 className="mt-6 text-[2.6rem] leading-[1.02] md:text-[4.2rem]">
-              Sua queda de cabelo, avaliada por médico{" "}
-              <em className="font-light italic text-copper">antes</em> de virar tratamento.
+              Cia Cap: produtos para sua rotina <em className="font-light italic text-copper">capilar.</em>
             </h1>
             <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg">
-              Questionário de 3 minutos, consulta por telemedicina e fórmula manipulada entregue em
-              casa todo mês.
+              Dermocosméticos, tônicos, shampoos estimulantes e suplementos sem prescrição médica.
+              Escolha os cuidados que combinam com sua rotina.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild variant="pill" size="xl">
                 <Link to="/avaliacao">
-                  Iniciar avaliação gratuita <ArrowRight />
+                  Responder questionário gratuito <ArrowRight />
                 </Link>
               </Button>
               <Button asChild variant="pill-outline" size="xl">
@@ -172,7 +127,7 @@ function Index() {
                   <Star key={i} className="size-4 fill-current" />
                 ))}
               </div>
-              <span>Avaliação sem cartão de crédito</span>
+              <span>Questionário sem cartão de crédito</span>
             </div>
           </div>
 
@@ -187,7 +142,7 @@ function Index() {
               />
             </div>
             <div className="absolute -bottom-6 left-4 right-4 md:-left-10 md:right-auto md:w-72">
-              <DensityCurve />
+              <div className="rounded-2xl border border-border bg-background/90 p-4 shadow-soft backdrop-blur"><p className="eyebrow text-muted-foreground">Sua rotina capilar</p><p className="mt-2 text-sm">Cuidados sem prescrição, no seu ritmo.</p></div>
             </div>
           </div>
         </section>
@@ -208,9 +163,9 @@ function Index() {
         <section id="como-funciona" className="container-site scroll-mt-20 py-20 md:py-28">
           <div className="max-w-xl">
             <span className="eyebrow text-copper">Como funciona</span>
-            <h2 className="mt-3 text-4xl md:text-5xl">Como o tratamento avança</h2>
+            <h2 className="mt-3 text-4xl md:text-5xl">Da escolha à sua rotina</h2>
             <p className="mt-4 text-muted-foreground">
-              Cada etapa tem um responsável claro: você, o médico e a farmácia parceira.
+              Conheça as opções, escolha seus produtos e acompanhe a entrega pela sua conta.
             </p>
           </div>
           <ol className="mt-12 grid gap-4 md:grid-cols-4">
@@ -232,18 +187,18 @@ function Index() {
               <span className="eyebrow text-copper">Planos de assinatura</span>
               <h2 className="mt-3 text-4xl md:text-5xl">Cancele quando quiser</h2>
               <p className="mt-4 text-muted-foreground">
-                O médico define o tratamento. O plano define o que vem incluso.
+                Compare os planos e confira os itens e condições de cada assinatura.
               </p>
             </div>
             <div className="mt-14 grid gap-6 md:grid-cols-3 md:items-stretch">
               {PLANS.map((p) => (
-                <PlanCard key={p.id} plan={p} />
+                <PlanCard key={p.id} plan={p} productCopy />
               ))}
             </div>
             <p className="mx-auto mt-8 max-w-lg text-center text-xs text-muted-foreground">
-              O tratamento prescrito depende de avaliação médica individual. Não sabe qual escolher?{" "}
+              Produtos sem prescrição médica. Não sabe por onde começar?{" "}
               <Link to="/avaliacao" className="text-foreground underline underline-offset-4">
-                A avaliação indica o plano certo.
+                Responda ao questionário de rotina capilar.
               </Link>
             </p>
           </div>
@@ -256,7 +211,7 @@ function Index() {
               <span className="eyebrow text-copper">Loja Cia Cap</span>
               <h2 className="mt-3 text-4xl md:text-5xl">Complete sua rotina</h2>
               <p className="mt-4 text-muted-foreground">
-                Produtos selecionados que combinam com o tratamento, de lojas parceiras.
+                Dermocosméticos, tônicos, shampoos estimulantes e suplementos para complementar seus cuidados.
               </p>
             </div>
             <Button asChild variant="pill-outline" size="xl" className="self-start md:self-auto">
@@ -275,8 +230,8 @@ function Index() {
         {/* Testimonials */}
         <section className="bg-forest-glow py-20 text-forest-foreground md:py-28">
           <div className="container-site">
-            <span className="eyebrow text-copper">Pacientes</span>
-            <h2 className="mt-3 max-w-xl text-4xl md:text-5xl">Quem já começou o acompanhamento</h2>
+            <span className="eyebrow text-copper">Cuidados capilares</span>
+            <h2 className="mt-3 max-w-xl text-4xl md:text-5xl">Escolhas para o dia a dia</h2>
             <div className="mt-12 grid gap-5 md:grid-cols-3">
               {TESTIMONIALS.map((t) => (
                 <figure key={t.name} className="rounded-3xl border border-forest-foreground/15 p-7">
@@ -284,7 +239,7 @@ function Index() {
                     “{t.quote}”
                   </blockquote>
                   <figcaption className="mt-6 flex items-center gap-2 text-sm text-forest-foreground/70">
-                    <BadgeCheck className="size-4 text-copper" /> {t.name}
+                    {t.name}
                   </figcaption>
                 </figure>
               ))}
@@ -318,14 +273,14 @@ function Index() {
         <section className="container-site pb-20 md:pb-28">
           <div className="rounded-[2rem] bg-sage px-6 py-14 text-center md:px-16 md:py-20">
             <h2 className="mx-auto max-w-2xl text-4xl md:text-5xl">
-              O primeiro passo é entender seu caso.
+              Encontre produtos para sua rotina capilar.
             </h2>
             <p className="mt-4 text-sage-foreground/80">
               Leva 3 minutos. Sem compromisso, sem cartão de crédito.
             </p>
             <Button asChild variant="pill" size="xl" className="mt-8">
               <Link to="/avaliacao">
-                Iniciar avaliação <ArrowRight />
+                Responder questionário <ArrowRight />
               </Link>
             </Button>
           </div>
@@ -338,7 +293,7 @@ function Index() {
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 p-3 backdrop-blur md:hidden">
         <Button asChild variant="pill" size="xl" className="w-full">
           <Link to="/avaliacao">
-            Fazer avaliação gratuita <ArrowRight />
+            Responder questionário <ArrowRight />
           </Link>
         </Button>
       </div>
