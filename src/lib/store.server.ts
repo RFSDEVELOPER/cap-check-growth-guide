@@ -96,7 +96,9 @@ export async function loadCatalog(client: Client, opts: { withImages: boolean })
       image: (p.image_url && images.get(p.image_url)) || fallbackImage(p.id, p.category as ProductCategory),
       badge: p.badge,
     })),
-    affiliates: (affiliates.data ?? []).map(
+    affiliates: (affiliates.data ?? [])
+      .filter((p) => !!p.url && p.url !== "#")
+      .map(
       (p): AffiliateProduct => ({
         id: p.id,
         name: p.name,
