@@ -33,3 +33,6 @@ use the editor.
 
 - Plans, affiliate products and quiz scoring live in `src/lib/catalog.ts`; pages read from it so prices and links change in one place.
 - Affiliate links use `rel="sponsored"` and the site shows an affiliate disclosure, required for transparent affiliate sales.
+- Payments go through Mercado Pago's REST API from `src/lib/payments.functions.ts` (Checkout Pro for the cart, preapproval for monthly plans); totals are rebuilt server-side by `buildOrder` in `src/lib/checkout.ts` so the browser never sets prices.
+- `orders` and `subscriptions` are read-only for patients; only server code (after auth) and the `/api/public/mercadopago/webhook` route write them, and the webhook re-reads every update from Mercado Pago instead of trusting the notification body.
+- Auth state is subscribed once in `AuthProvider` (`src/lib/auth.tsx`); the cart lives in `CartProvider` (`src/lib/cart.tsx`, localStorage) so it survives sign-in.
