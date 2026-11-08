@@ -21,9 +21,10 @@ import { PlanCard } from "@/components/site/PlanCard";
 import { ProductCard } from "@/components/site/ProductCard";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
-import { PLANS, PRODUCTS } from "@/lib/catalog";
+import { storefrontQuery, useStorefront } from "@/lib/storefront";
 
 export const Route = createFileRoute("/")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(storefrontQuery),
   head: () => ({
     meta: [
       { title: "Cia Cap — Tratamento para queda de cabelo com médico" },
@@ -131,6 +132,7 @@ function DensityCurve() {
 }
 
 function Index() {
+  const { plans: PLANS, affiliates: PRODUCTS } = useStorefront();
   const featuredProducts = PRODUCTS.filter((p) => p.badge).concat(
     PRODUCTS.filter((p) => !p.badge).slice(0, 1),
   );

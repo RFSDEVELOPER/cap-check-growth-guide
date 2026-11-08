@@ -74,6 +74,12 @@ async function applyPaymentObject(payment: MpPayment) {
     .from("orders")
     .update({ status, mp_payment_id: String(payment.id) })
     .eq("id", order.id);
+
+  // Lower stock and count the coupon use once the order is paid (runs only once per order).
+  if (status === "pago") {
+    const { error } = await db.rpc("finalize_paid_order", { _order_id: order.id });
+    if (error) console.error(`Stock update failed for order ${order.id}`, error);
+  }
 }
 
 /** Looks up the latest payment for an order (used when the patient returns from checkout). */

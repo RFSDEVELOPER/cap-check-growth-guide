@@ -31,7 +31,10 @@ use the editor.
 
 ## Project rules
 
-- Plans, affiliate products and quiz scoring live in `src/lib/catalog.ts`; pages read from it so prices and links change in one place.
+- Plans, store products (price, promo, stock, delivery days), affiliate links, coupons and shipping settings live in the database and are edited in the admin area (`/admin`); public pages read them through `getStorefront` (`src/lib/store.functions.ts`). `src/lib/catalog.ts` keeps shared types, price rules and quiz scoring.
+- Admin access is the `admin` role in `user_roles`, checked with `has_role` in row security and in admin server functions; admin pages read and write through the browser client so row security is the guard.
+- Stock is lowered and coupon use counted only by `finalize_paid_order`, called by server code once Mercado Pago confirms payment, so each order is applied exactly once.
+- Product photos live in the private `product-images` bucket; storefront and admin pages show signed links, because public buckets are blocked in this workspace.
 - Affiliate links use `rel="sponsored"` and the site shows an affiliate disclosure, required for transparent affiliate sales.
 - Payments go through Mercado Pago's REST API from `src/lib/payments.functions.ts` (Checkout Pro for the cart, preapproval for monthly plans); totals are rebuilt server-side by `buildOrder` in `src/lib/checkout.ts` so the browser never sets prices.
 - `orders` and `subscriptions` are read-only for patients; only server code (after auth) and the `/api/public/mercadopago/webhook` route write them, and the webhook re-reads every update from Mercado Pago instead of trusting the notification body.

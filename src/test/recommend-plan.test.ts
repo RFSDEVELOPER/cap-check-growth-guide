@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getPlan, recommendPlan } from "@/lib/catalog";
+import { recommendPlan } from "@/lib/catalog";
 
 describe("recommendPlan", () => {
   it("recommends Essencial for early, mild hair loss", () => {
@@ -43,11 +43,5 @@ describe("recommendPlan", () => {
     const r = recommendPlan({ tempo: "menos-1", area: "entradas", sinais: "falhas" });
     expect(r.plan).toBe("avancado");
     expect(r.needsDermatologist).toBe(true);
-  });
-
-  it("keeps the plan prices R$89, R$149 and R$219", () => {
-    expect(getPlan("essencial").price).toBe(89);
-    expect(getPlan("completo").price).toBe(149);
-    expect(getPlan("avancado").price).toBe(219);
   });
 });
