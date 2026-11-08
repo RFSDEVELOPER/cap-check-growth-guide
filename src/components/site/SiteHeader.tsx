@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Menu, ShoppingBag, Sprout, UserRound } from "lucide-react";
+import { ArrowRight, LayoutDashboard, Menu, ShoppingBag, Sprout, UserRound } from "lucide-react";
 import { useState } from "react";
 
 import { useAuth } from "@/lib/auth";
@@ -41,7 +41,7 @@ function CartLink() {
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-md">
@@ -57,6 +57,13 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
+          {isAdmin && (
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/admin">
+                <LayoutDashboard /> Admin
+              </Link>
+            </Button>
+          )}
           <CartLink />
           <Button asChild variant="pill-outline" size="lg" className="px-5">
             <Link to={user ? "/conta" : "/auth"}>
@@ -93,6 +100,13 @@ export function SiteHeader() {
               ))}
             </div>
             <div className="mt-8 flex flex-col gap-3 px-3">
+              {isAdmin && (
+                <Button asChild variant="copper" size="xl">
+                  <Link to="/admin" onClick={() => setOpen(false)}>
+                    <LayoutDashboard /> Administração
+                  </Link>
+                </Button>
+              )}
               <Button asChild variant="pill" size="xl">
                 <Link to="/avaliacao" onClick={() => setOpen(false)}>
                   Fazer avaliação <ArrowRight />
