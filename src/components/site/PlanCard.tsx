@@ -18,7 +18,7 @@ export function PlanCard({ plan, recommended, productCopy = false }: { plan: Pla
     >
       {featured && (
         <span className="eyebrow absolute -top-3 left-7 rounded-full bg-copper px-3 py-1 text-copper-foreground">
-          {recommended ? "Sugestão de rotina" : "Em destaque"}
+          {recommended ? (productCopy ? "Sugestão de rotina" : "Indicado para você") : (productCopy ? "Em destaque" : "Mais escolhido")}
         </span>
       )}
       <h3 className="text-2xl">{plan.name}</h3>
