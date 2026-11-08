@@ -8,9 +8,11 @@ import { ShopProductCard } from "@/components/site/ShopProductCard";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { cn } from "@/lib/utils";
-import { CATEGORY_LABEL, PRODUCTS, SHOP_PRODUCTS, type ProductCategory } from "@/lib/catalog";
+import { CATEGORY_LABEL, type ProductCategory } from "@/lib/catalog";
+import { storefrontQuery, useStorefront } from "@/lib/storefront";
 
 export const Route = createFileRoute("/loja")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(storefrontQuery),
   head: () => ({
     meta: [
       { title: "Loja Cia Cap — Produtos para queda de cabelo" },
@@ -33,6 +35,8 @@ export const Route = createFileRoute("/loja")({
 type Filter = "todos" | ProductCategory;
 
 function Loja() {
+  const store = useStorefront();
+  const PRODUCTS = store.affiliates;
   const [filter, setFilter] = useState<Filter>("todos");
   const filters: Filter[] = ["todos", ...(Object.keys(CATEGORY_LABEL) as ProductCategory[])];
   const list = filter === "todos" ? PRODUCTS : PRODUCTS.filter((p) => p.category === filter);
@@ -65,8 +69,8 @@ function Loja() {
             </Button>
           </div>
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {SHOP_PRODUCTS.map((p) => (
-              <ShopProductCard key={p.id} product={p} />
+            {store.products.map((p) => (
+              <ShopProductCard key={p.id} product={p} lowStockAlert={store.settings.lowStockAlert} />
             ))}
           </div>
         </section>

@@ -12,9 +12,11 @@ import { PlanCard } from "@/components/site/PlanCard";
 import { ProductCard } from "@/components/site/ProductCard";
 import { Logo } from "@/components/site/SiteHeader";
 import { cn } from "@/lib/utils";
-import { getPlan, PRODUCTS, QUIZ, recommendPlan, type QuizAnswers } from "@/lib/catalog";
+import { QUIZ, recommendPlan, type QuizAnswers } from "@/lib/catalog";
+import { storefrontQuery, useStorefront } from "@/lib/storefront";
 
 export const Route = createFileRoute("/avaliacao")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(storefrontQuery),
   head: () => ({
     meta: [
       { title: "Avaliação capilar gratuita — Cia Cap" },
@@ -166,8 +168,9 @@ function SaveResult({ answers }: { answers: QuizAnswers }) {
 }
 
 function Result({ answers, onRestart }: { answers: QuizAnswers; onRestart: () => void }) {
+  const { plans, affiliates: PRODUCTS } = useStorefront();
   const result = recommendPlan(answers);
-  const plan = getPlan(result.plan);
+  const plan = plans.find((p) => p.id === result.plan);
   const products = PRODUCTS.filter((p) =>
     result.plan === "essencial" ? p.category === "limpeza" : p.category !== "finalizacao",
   ).slice(0, 3);
