@@ -170,7 +170,7 @@ function SaveResult({ answers }: { answers: QuizAnswers }) {
 function Result({ answers, onRestart }: { answers: QuizAnswers; onRestart: () => void }) {
   const { plans, affiliates: PRODUCTS } = useStorefront();
   const result = recommendPlan(answers);
-  const plan = plans.find((p) => p.id === result.plan);
+  const plan = plans.find((p) => p.id === result.plan) ?? plans.find((p) => p.highlight) ?? plans[0];
   const products = PRODUCTS.filter((p) =>
     result.plan === "essencial" ? p.category === "limpeza" : p.category !== "finalizacao",
   ).slice(0, 3);
@@ -182,7 +182,7 @@ function Result({ answers, onRestart }: { answers: QuizAnswers; onRestart: () =>
           Seu resultado
         </span>
         <h1 className="mt-6 text-4xl leading-tight md:text-5xl">
-          Indicamos o plano <em className="font-light italic text-copper">{plan.name}</em>
+          Indicamos o plano <em className="font-light italic text-copper">{plan?.name ?? result.plan}</em>
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-muted-foreground">{result.summary}</p>
       </div>
@@ -200,7 +200,7 @@ function Result({ answers, onRestart }: { answers: QuizAnswers; onRestart: () =>
       )}
 
       <div className="mx-auto mt-12 max-w-md">
-        <PlanCard plan={plan} recommended />
+        {plan && <PlanCard plan={plan} recommended />}
       </div>
 
       <p className="mx-auto mt-6 max-w-md text-center text-xs text-muted-foreground">
