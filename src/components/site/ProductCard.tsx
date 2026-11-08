@@ -27,11 +27,17 @@ export function ProductCard({ product }: { product: AffiliateProduct }) {
         <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
           {product.description}
         </p>
-        <Button asChild variant="pill-outline" className="mt-5 h-11 w-full">
-          <a href={product.url} target="_blank" rel="sponsored noopener noreferrer">
-            Ver no {product.store} <ArrowUpRight />
-          </a>
-        </Button>
+        {hasLink ? (
+          <Button asChild variant="pill-outline" className="mt-5 h-11 w-full">
+            <a href={product.url} target="_blank" rel="sponsored noopener noreferrer">
+              Ver no {product.store} <ArrowUpRight />
+            </a>
+          </Button>
+        ) : (
+          <Button variant="pill-outline" className="mt-5 h-11 w-full" disabled>
+            Link em breve
+          </Button>
+        )}
       </div>
     </article>
   );
