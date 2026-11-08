@@ -1,4 +1,9 @@
-import { getPlanById, getShopProduct, MAX_QTY_PER_ITEM, SHIPPING_FEE } from "@/lib/catalog";
+import {
+  effectivePrice,
+  MAX_QTY_PER_ITEM,
+  type ShopProduct,
+  type StoreSettings,
+} from "@/lib/catalog";
 
 export interface CartLine {
   id: string;
@@ -13,49 +18,106 @@ export interface OrderLine {
   subtotal: number;
 }
 
+export interface Coupon {
+  code: string;
+  kind: "percent" | "fixed" | "frete";
+  value: number;
+  min_order: number;
+  starts_at: string | null;
+  ends_at: string | null;
+  max_uses: number | null;
+  used_count: number;
+  active: boolean;
+}
+
 export interface OrderDraft {
   lines: OrderLine[];
   subtotal: number;
+  discount: number;
   shipping: number;
   total: number;
+  /** Longest delivery time among the products, in days. */
+  deliveryDays: number;
+  couponCode: string | null;
+}
+
+export type CheckoutErrorCode = "carrinho_vazio" | "produto_indisponivel" | "sem_estoque" | "cupom_invalido";
+
+export class CheckoutError extends Error {
+  constructor(
+    public code: CheckoutErrorCode,
+    public detail?: string,
+  ) {
+    super(detail ? `${code}: ${detail}` : code);
+  }
 }
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
+/** Why a coupon can't be used for this subtotal, or null when it is valid. */
+export function couponProblem(coupon: Coupon, subtotal: number, now: Date = new Date()): string | null {
+  if (!coupon.active) return "Cupom desativado";
+  if (coupon.starts_at && new Date(coupon.starts_at) > now) return "Cupom ainda não começou";
+  if (coupon.ends_at && new Date(coupon.ends_at) <= now) return "Cupom expirado";
+  if (coupon.max_uses != null && coupon.used_count >= coupon.max_uses) return "Cupom esgotado";
+  if (subtotal < coupon.min_order) return `Válido para compras a partir de R$ ${coupon.min_order}`;
+  return null;
+}
+
 /**
- * Builds an order from cart lines using catalog prices only.
- * Unknown products are rejected; quantities are clamped to 1..MAX_QTY_PER_ITEM.
+ * Builds an order using database prices only (promo price while valid), checking stock,
+ * applying the coupon and the shipping rules. The browser never sets prices.
  */
-export function buildOrder(cart: CartLine[]): OrderDraft {
+export function buildOrder(
+  cart: CartLine[],
+  catalog: { products: Pick<ShopProduct, "id" | "name" | "price" | "promoPrice" | "promoUntil" | "stock" | "deliveryDays">[]; settings: StoreSettings },
+  coupon: Coupon | null = null,
+  now: Date = new Date(),
+): OrderDraft {
   const merged = new Map<string, number>();
   for (const line of cart) {
     merged.set(line.id, (merged.get(line.id) ?? 0) + Math.floor(line.qty));
   }
 
   const lines: OrderLine[] = [];
+  let deliveryDays = 0;
   for (const [id, rawQty] of merged) {
-    const product = getShopProduct(id);
-    if (!product) throw new Error(`Produto desconhecido: ${id}`);
+    const product = catalog.products.find((p) => p.id === id);
+    if (!product) throw new CheckoutError("produto_indisponivel", id);
     const qty = Math.min(Math.max(rawQty, 1), MAX_QTY_PER_ITEM);
-    lines.push({
-      id,
-      name: product.name,
-      qty,
-      unitPrice: product.price,
-      subtotal: round2(product.price * qty),
-    });
+    if (qty > product.stock) throw new CheckoutError("sem_estoque", product.name);
+    const unitPrice = effectivePrice(product, now);
+    lines.push({ id, name: product.name, qty, unitPrice, subtotal: round2(unitPrice * qty) });
+    deliveryDays = Math.max(deliveryDays, product.deliveryDays);
   }
-  if (lines.length === 0) throw new Error("Carrinho vazio");
+  if (lines.length === 0) throw new CheckoutError("carrinho_vazio");
 
   const subtotal = round2(lines.reduce((s, l) => s + l.subtotal, 0));
-  return { lines, subtotal, shipping: SHIPPING_FEE, total: round2(subtotal + SHIPPING_FEE) };
-}
 
-/** Monthly amount charged for a plan subscription. */
-export function planMonthlyAmount(planId: string): number {
-  const plan = getPlanById(planId);
-  if (!plan) throw new Error(`Plano desconhecido: ${planId}`);
-  return plan.price;
+  let discount = 0;
+  let freeShippingByCoupon = false;
+  if (coupon) {
+    const problem = couponProblem(coupon, subtotal, now);
+    if (problem) throw new CheckoutError("cupom_invalido", problem);
+    if (coupon.kind === "percent") discount = round2((subtotal * Math.min(coupon.value, 100)) / 100);
+    else if (coupon.kind === "fixed") discount = round2(Math.min(coupon.value, subtotal));
+    else freeShippingByCoupon = true;
+  }
+
+  const afterDiscount = round2(subtotal - discount);
+  const { shippingFee, freeShippingMin } = catalog.settings;
+  const freeByMinimum = freeShippingMin != null && afterDiscount >= freeShippingMin;
+  const shipping = freeShippingByCoupon || freeByMinimum ? 0 : round2(shippingFee);
+
+  return {
+    lines,
+    subtotal,
+    discount,
+    shipping,
+    total: round2(afterDiscount + shipping),
+    deliveryDays,
+    couponCode: coupon?.code ?? null,
+  };
 }
 
 export const ORDER_STATUS_FROM_MP: Record<string, string> = {
@@ -87,3 +149,19 @@ export const STATUS_LABEL: Record<string, string> = {
   pausada: "Pausada",
   cancelada: "Cancelada",
 };
+
+export type FulfillmentStatus = "aguardando" | "separando" | "enviado" | "entregue" | "cancelado";
+
+export const FULFILLMENT_LABEL: Record<FulfillmentStatus, string> = {
+  aguardando: "Aguardando envio",
+  separando: "Em separação",
+  enviado: "Enviado",
+  entregue: "Entregue",
+  cancelado: "Envio cancelado",
+};
+
+/** Date (YYYY-MM-DD) that is `days` days after `from`. */
+export function addDaysISO(from: Date, days: number): string {
+  const d = new Date(from.getTime() + days * 86_400_000);
+  return d.toISOString().slice(0, 10);
+}
