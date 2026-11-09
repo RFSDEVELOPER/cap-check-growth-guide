@@ -104,6 +104,30 @@ export type Database = {
         }
         Relationships: []
       }
+      integration_secrets: {
+        Row: {
+          ciphertext: string
+          iv: string
+          last4: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          ciphertext: string
+          iv: string
+          last4: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          ciphertext?: string
+          iv?: string
+          last4?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           carrier: string | null
@@ -121,6 +145,7 @@ export type Database = {
           shipped_at: string | null
           shipping: Json | null
           shipping_fee: number
+          shipping_service: string | null
           status: string
           stock_applied: boolean
           subtotal: number | null
@@ -145,6 +170,7 @@ export type Database = {
           shipped_at?: string | null
           shipping?: Json | null
           shipping_fee?: number
+          shipping_service?: string | null
           status?: string
           stock_applied?: boolean
           subtotal?: number | null
@@ -169,6 +195,7 @@ export type Database = {
           shipped_at?: string | null
           shipping?: Json | null
           shipping_fee?: number
+          shipping_service?: string | null
           status?: string
           stock_applied?: boolean
           subtotal?: number | null
@@ -176,6 +203,33 @@ export type Database = {
           tracking_code?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      payment_settings: {
+        Row: {
+          gateway: string
+          id: boolean
+          mode: string
+          public_key_producao: string | null
+          public_key_teste: string | null
+          updated_at: string
+        }
+        Insert: {
+          gateway?: string
+          id?: boolean
+          mode?: string
+          public_key_producao?: string | null
+          public_key_teste?: string | null
+          updated_at?: string
+        }
+        Update: {
+          gateway?: string
+          id?: boolean
+          mode?: string
+          public_key_producao?: string | null
+          public_key_teste?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -223,8 +277,10 @@ export type Database = {
           created_at: string
           delivery_days: number
           description: string
+          height_cm: number
           id: string
           image_url: string | null
+          length_cm: number
           name: string
           price: number
           promo_price: number | null
@@ -232,6 +288,8 @@ export type Database = {
           sort_order: number
           stock: number
           updated_at: string
+          weight_kg: number
+          width_cm: number
         }
         Insert: {
           active?: boolean
@@ -240,8 +298,10 @@ export type Database = {
           created_at?: string
           delivery_days?: number
           description?: string
+          height_cm?: number
           id: string
           image_url?: string | null
+          length_cm?: number
           name: string
           price: number
           promo_price?: number | null
@@ -249,6 +309,8 @@ export type Database = {
           sort_order?: number
           stock?: number
           updated_at?: string
+          weight_kg?: number
+          width_cm?: number
         }
         Update: {
           active?: boolean
@@ -257,8 +319,10 @@ export type Database = {
           created_at?: string
           delivery_days?: number
           description?: string
+          height_cm?: number
           id?: string
           image_url?: string | null
+          length_cm?: number
           name?: string
           price?: number
           promo_price?: number | null
@@ -266,6 +330,8 @@ export type Database = {
           sort_order?: number
           stock?: number
           updated_at?: string
+          weight_kg?: number
+          width_cm?: number
         }
         Relationships: []
       }
@@ -350,23 +416,32 @@ export type Database = {
       store_settings: {
         Row: {
           free_shipping_min: number | null
+          handling_days: number
           id: boolean
           low_stock_alert: number
+          origin_cep: string | null
           shipping_fee: number
+          shipping_sandbox: boolean
           updated_at: string
         }
         Insert: {
           free_shipping_min?: number | null
+          handling_days?: number
           id?: boolean
           low_stock_alert?: number
+          origin_cep?: string | null
           shipping_fee?: number
+          shipping_sandbox?: boolean
           updated_at?: string
         }
         Update: {
           free_shipping_min?: number | null
+          handling_days?: number
           id?: boolean
           low_stock_alert?: number
+          origin_cep?: string | null
           shipping_fee?: number
+          shipping_sandbox?: boolean
           updated_at?: string
         }
         Relationships: []
