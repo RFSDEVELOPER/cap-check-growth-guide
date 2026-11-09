@@ -12,7 +12,7 @@ import { useAuth } from "@/lib/auth";
 import { useCart } from "@/lib/cart";
 import { effectivePrice, formatPrice, hasActivePromo } from "@/lib/catalog";
 import { buildOrder, CheckoutError, type OrderDraft } from "@/lib/checkout";
-import { quoteCart, startCartCheckout, type CheckoutFailure } from "@/lib/payments.functions";
+import { quoteCart, quoteShippingByCep, startCartCheckout, type CheckoutFailure } from "@/lib/payments.functions";
 import { storefrontQuery, useStorefront } from "@/lib/storefront";
 
 export const Route = createFileRoute("/carrinho")({
@@ -40,6 +40,8 @@ function errorText(code: CheckoutFailure | string, detail?: string): string {
       return detail ?? "Cupom inválido.";
     case "carrinho_vazio":
       return "Seu carrinho está vazio.";
+    case "frete_indisponivel":
+      return "Calcule o frete com o CEP do seu endereço de entrega e escolha uma opção.";
     case "pagamento_indisponivel":
       return "O pagamento ainda está sendo ativado. Tente novamente em breve.";
     default:
@@ -57,23 +59,61 @@ function Carrinho() {
   const [couponInput, setCouponInput] = useState("");
   const [coupon, setCoupon] = useState<{ code: string; order: OrderDraft } | null>(null);
   const [couponBusy, setCouponBusy] = useState(false);
+  const shipQuote = useServerFn(quoteShippingByCep);
+  const [cep, setCep] = useState("");
+  const [shipBusy, setShipBusy] = useState(false);
+  const [shipOptions, setShipOptions] = useState<{ id: string; name: string; price: number; days: number }[] | null>(null);
+  const [shipMode, setShipMode] = useState<"fixo" | "cotacao" | null>(null);
+  const [shipId, setShipId] = useState<string | null>(null);
+  const picked = shipOptions?.find((o) => o.id === shipId) ?? null;
+  const shipParams = picked ? { cep, shippingService: picked.id } : {};
+
+  async function calcShipping(e: FormEvent) {
+    e.preventDefault();
+    setShipBusy(true);
+    try {
+      const res = await shipQuote({ data: { cep, items: cart.lines } });
+      if ("error" in res) {
+        toast.error(res.error === "cep_invalido" ? "Digite um CEP com 8 números." : "Não foi possível calcular o frete agora.");
+      } else if (res.mode === "fixo") {
+        setShipMode("fixo");
+        setShipOptions(null);
+      } else {
+        setShipMode("cotacao");
+        setShipOptions(res.options);
+        setShipId(res.options[0]?.id ?? null);
+        if (res.options.length === 0) toast.error("Nenhuma entrega disponível para esse CEP.");
+      }
+    } catch {
+      toast.error("Não foi possível calcular o frete agora.");
+    }
+    setShipBusy(false);
+  }
 
   const local = useMemo((): { order: OrderDraft } | { error: string } | null => {
     if (cart.lines.length === 0) return null;
     try {
-      return { order: buildOrder(cart.lines, store) };
+      return {
+        order: buildOrder(
+          cart.lines,
+          store,
+          null,
+          new Date(),
+          picked ? { service: picked.name, price: picked.price, days: picked.days } : null,
+        ),
+      };
     } catch (e) {
       if (e instanceof CheckoutError) return { error: errorText(e.code, e.detail) };
       return { error: errorText("falha") };
     }
-  }, [cart.lines, store]);
+  }, [cart.lines, store, picked]);
 
   // Re-price with the coupon on the server whenever the cart changes.
   const linesKey = JSON.stringify(cart.lines);
   useEffect(() => {
     if (!coupon || cart.lines.length === 0) return;
     let alive = true;
-    quote({ data: { items: cart.lines, coupon: coupon.code } })
+    quote({ data: { items: cart.lines, coupon: coupon.code, ...shipParams } })
       .then((res) => {
         if (!alive) return;
         if ("order" in res) setCoupon({ code: coupon.code, order: res.order });
@@ -87,7 +127,7 @@ function Carrinho() {
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [linesKey]);
+  }, [linesKey, picked?.id]);
 
   async function applyCoupon(e: FormEvent) {
     e.preventDefault();
@@ -95,7 +135,7 @@ function Carrinho() {
     if (!code) return;
     setCouponBusy(true);
     try {
-      const res = await quote({ data: { items: cart.lines, coupon: code } });
+      const res = await quote({ data: { items: cart.lines, coupon: code, ...shipParams } });
       if ("order" in res) {
         setCoupon({ code, order: res.order });
         toast.success("Cupom aplicado");
@@ -110,7 +150,12 @@ function Carrinho() {
     setBusy(true);
     try {
       const res = await checkout({
-        data: { items: cart.lines, origin: window.location.origin, ...(coupon ? { coupon: coupon.code } : {}) },
+        data: {
+          items: cart.lines,
+          origin: window.location.origin,
+          ...(coupon ? { coupon: coupon.code } : {}),
+          ...(picked ? { shippingService: picked.id } : {}),
+        },
       });
       if ("url" in res) {
         window.location.href = res.url;
@@ -238,6 +283,49 @@ function Carrinho() {
                     </Button>
                   </form>
                 )
+              )}
+
+              <form onSubmit={calcShipping} className="mt-5 flex gap-2">
+                <Input
+                  value={cep}
+                  onChange={(e) => {
+                    setCep(e.target.value);
+                    setShipOptions(null);
+                    setShipId(null);
+                    setShipMode(null);
+                  }}
+                  placeholder="CEP para o frete"
+                  aria-label="CEP para calcular o frete"
+                  inputMode="numeric"
+                  maxLength={9}
+                  className="h-10 rounded-xl bg-card font-mono"
+                />
+                <Button type="submit" variant="pill-outline" disabled={shipBusy || cep.replace(/\D/g, "").length !== 8}>
+                  {shipBusy ? <Loader2 className="animate-spin" /> : "Calcular"}
+                </Button>
+              </form>
+              {shipOptions && shipOptions.length > 0 && (
+                <fieldset className="mt-3 grid gap-2" aria-label="Opções de entrega">
+                  {shipOptions.map((o) => (
+                    <label
+                      key={o.id}
+                      className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-border bg-card px-3 py-2 text-sm has-[:checked]:border-primary"
+                    >
+                      <span className="flex items-center gap-2">
+                        <input type="radio" name="frete" checked={shipId === o.id} onChange={() => setShipId(o.id)} className="accent-primary" />
+                        <span>
+                          {o.name}
+                          <span className="block text-xs text-muted-foreground">até {o.days} dias úteis</span>
+                        </span>
+                      </span>
+                      <strong>{formatPrice(o.price)}</strong>
+                    </label>
+                  ))}
+                  <p className="text-xs text-muted-foreground">O valor final usa o CEP do endereço de entrega da sua conta.</p>
+                </fieldset>
+              )}
+              {shipMode === "fixo" && (
+                <p className="mt-2 text-xs text-muted-foreground">Frete fixo da loja aplicado.</p>
               )}
 
               {order && (
