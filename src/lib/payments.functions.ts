@@ -10,7 +10,9 @@ import {
   type CheckoutErrorCode,
   type OrderDraft,
 } from "@/lib/checkout";
+import { getMpToken } from "@/lib/credentials.server";
 import { applyPreapproval, mpRequest, syncOrder } from "@/lib/mercadopago.server";
+import { quoteShipping, type ShippingOption } from "@/lib/shipping.server";
 import { loadCatalog, loadCoupon } from "@/lib/store.server";
 
 export type CheckoutFailure =
@@ -39,9 +41,58 @@ const cartSchema = z.object({
     .max(30)
     .transform((c) => c.toUpperCase())
     .optional(),
+  shippingService: z.string().regex(/^[0-9]{1,6}$/).optional(),
 });
 
-async function priceCart(items: CartLine[], couponCode: string | undefined): Promise<OrderDraft> {
+const cepSchema = z.string().transform((c) => c.replace(/\D/g, "")).pipe(z.string().length(8));
+
+async function shippingItems(items: CartLine[]) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin
+    .from("products")
+    .select("id, price, promo_price, weight_kg, length_cm, width_cm, height_cm")
+    .in("id", items.map((i) => i.id));
+  return items.flatMap((i) => {
+    const p = data?.find((d) => d.id === i.id);
+    if (!p) return [];
+    return [{
+      id: p.id,
+      qty: i.qty,
+      price: Number(p.promo_price ?? p.price),
+      weightKg: Number(p.weight_kg),
+      lengthCm: p.length_cm,
+      widthCm: p.width_cm,
+      heightCm: p.height_cm,
+    }];
+  });
+}
+
+export type ShippingQuoteResult =
+  | { mode: "fixo" }
+  | { mode: "cotacao"; options: ShippingOption[] }
+  | { error: "cep_invalido" | "falha" };
+
+/** Quotes Correios and Jadlog for the cart by CEP (falls back to the fixed fee when not configured). */
+export const quoteShippingByCep = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z.object({ cep: z.string().max(12), items: cartSchema.shape.items }).parse(input),
+  )
+  .handler(async ({ data }): Promise<ShippingQuoteResult> => {
+    const cep = cepSchema.safeParse(data.cep);
+    if (!cep.success) return { error: "cep_invalido" };
+    try {
+      const options = await quoteShipping(cep.data, await shippingItems(data.items));
+      return options ? { mode: "cotacao", options } : { mode: "fixo" };
+    } catch {
+      return { error: "falha" };
+    }
+  });
+
+async function priceCart(
+  items: CartLine[],
+  couponCode: string | undefined,
+  shipping?: { cep: string | null | undefined; service: string | undefined },
+): Promise<OrderDraft> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const catalog = await loadCatalog(supabaseAdmin, { withImages: false });
   let coupon = null;
@@ -49,7 +100,17 @@ async function priceCart(items: CartLine[], couponCode: string | undefined): Pro
     coupon = await loadCoupon(supabaseAdmin, couponCode);
     if (!coupon) throw new CheckoutError("cupom_invalido", "Cupom não encontrado");
   }
-  return buildOrder(items, catalog, coupon);
+  let choice = null;
+  const cep = shipping?.cep ? cepSchema.safeParse(shipping.cep) : null;
+  if (cep?.success) {
+    const options = await quoteShipping(cep.data, await shippingItems(items));
+    if (options) {
+      const picked = options.find((o) => o.id === shipping?.service);
+      if (!picked) throw new CheckoutError("frete_indisponivel", "Escolha uma opção de frete");
+      choice = { service: picked.name, price: picked.price, days: picked.days };
+    }
+  }
+  return buildOrder(items, catalog, coupon, new Date(), choice);
 }
 
 export type QuoteResult = { order: OrderDraft } | { error: CheckoutFailure; detail?: string };
@@ -57,10 +118,12 @@ export type QuoteResult = { order: OrderDraft } | { error: CheckoutFailure; deta
 /** Prices the cart on the server (promo prices, stock, coupon and shipping). */
 export const quoteCart = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => cartSchema.parse(input))
+  .inputValidator((input) => cartSchema.extend({ cep: z.string().max(12).optional() }).parse(input))
   .handler(async ({ data }): Promise<QuoteResult> => {
     try {
-      return { order: await priceCart(data.items, data.coupon || undefined) };
+      return {
+        order: await priceCart(data.items, data.coupon || undefined, { cep: data.cep, service: data.shippingService }),
+      };
     } catch (e) {
       if (e instanceof CheckoutError) return { error: e.code, ...(e.detail ? { detail: e.detail } : {}) };
       console.error("Quote failed", e);
@@ -72,17 +135,9 @@ export const startCartCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => cartSchema.extend({ origin: originSchema }).parse(input))
   .handler(async ({ data, context }): Promise<CheckoutResult> => {
-    const token = process.env["MERCADOPAGO_ACCESS_TOKEN"];
+    const token = await getMpToken();
     if (!token) return { error: "pagamento_indisponivel" };
 
-    let order: OrderDraft;
-    try {
-      order = await priceCart(data.items, data.coupon || undefined);
-    } catch (e) {
-      if (e instanceof CheckoutError) return { error: e.code, ...(e.detail ? { detail: e.detail } : {}) };
-      console.error("Pricing failed", e);
-      return { error: "falha" };
-    }
 
     const { data: profile } = await context.supabase
       .from("profiles")
@@ -98,6 +153,18 @@ export const startCartCheckout = createServerFn({ method: "POST" })
       !profile.state
     ) {
       return { error: "endereco_incompleto" };
+    }
+
+    let order: OrderDraft;
+    try {
+      order = await priceCart(data.items, data.coupon || undefined, {
+        cep: profile.cep,
+        service: data.shippingService,
+      });
+    } catch (e) {
+      if (e instanceof CheckoutError) return { error: e.code, ...(e.detail ? { detail: e.detail } : {}) };
+      console.error("Pricing failed", e);
+      return { error: "falha" };
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -122,6 +189,7 @@ export const startCartCheckout = createServerFn({ method: "POST" })
         subtotal: order.subtotal,
         discount: order.discount,
         shipping_fee: order.shipping,
+        shipping_service: order.shippingService,
         coupon_code: order.couponCode,
         total: order.total,
         shipping: shipping as never,
@@ -198,7 +266,7 @@ export const startPlanSubscription = createServerFn({ method: "POST" })
     z.object({ planId: z.enum(["essencial", "completo", "avancado"]), origin: originSchema }).parse(input),
   )
   .handler(async ({ data, context }): Promise<CheckoutResult> => {
-    const token = process.env["MERCADOPAGO_ACCESS_TOKEN"];
+    const token = await getMpToken();
     if (!token) return { error: "pagamento_indisponivel" };
 
     // Price comes from the plans table managed in the admin area.
@@ -272,7 +340,7 @@ export const startPlanSubscription = createServerFn({ method: "POST" })
 export const syncMyPayments = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const token = process.env["MERCADOPAGO_ACCESS_TOKEN"];
+    const token = await getMpToken();
     if (!token) return { synced: 0 };
 
     const [{ data: orders }, { data: subs }] = await Promise.all([

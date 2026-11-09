@@ -40,3 +40,5 @@ use the editor.
 - `orders` and `subscriptions` are read-only for patients; only server code (after auth) and the `/api/public/mercadopago/webhook` route write them, and the webhook re-reads every update from Mercado Pago instead of trusting the notification body.
 - Auth state is subscribed once in `AuthProvider` (`src/lib/auth.tsx`); the cart lives in `CartProvider` (`src/lib/cart.tsx`, localStorage) so it survives sign-in.
 - Home and questionnaire use PlanCard's productCopy presentation to avoid rendering legacy medical plan descriptions; this does not change database-managed billing or plan contents.
+- Gateway and shipping credentials are saved from `/admin/configuracoes` into `integration_secrets` (AES-GCM with `SETTINGS_ENCRYPTION_KEY`, service-role only) via `src/lib/credentials.server.ts`; the browser only gets the last 4 characters, so secret values never leave the server.
+- Shipping by CEP quotes Correios and Jadlog through Melhor Envio (`src/lib/shipping.server.ts`); checkout re-quotes with the profile CEP so the browser never sets the freight price, and falls back to the fixed fee when no token is set.

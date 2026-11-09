@@ -16,7 +16,8 @@ export const Route = createFileRoute("/api/public/mercadopago/webhook")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const token = process.env["MERCADOPAGO_ACCESS_TOKEN"];
+        const creds = await import("@/lib/credentials.server");
+        const token = await creds.getMpToken();
         if (!token) return new Response("not configured", { status: 503 });
 
         const url = new URL(request.url);
@@ -34,7 +35,7 @@ export const Route = createFileRoute("/api/public/mercadopago/webhook")({
 
         const mp = await import("@/lib/mercadopago.server");
 
-        const secret = process.env["MERCADOPAGO_WEBHOOK_SECRET"];
+        const secret = await creds.getMpWebhookSecret();
         if (secret) {
           const ok = await mp.verifyMpSignature(
             secret,

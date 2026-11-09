@@ -187,6 +187,8 @@ function ProductForm({ product, onDone }: { product: Row | null; onDone: () => v
     const stock = Math.floor(Number(s("stock") || "0"));
     const deliveryDays = Math.floor(Number(s("delivery_days") || "7"));
     const promoUntil = s("promo_until");
+    const weight = parseMoney(s("weight_kg"));
+    const dims = ["length_cm", "width_cm", "height_cm"].map((k) => Math.floor(Number(s(k))));
 
     if (name.length < 2) { setError("Informe o nome do produto."); return; }
     if (!price || price <= 0) { setError("Informe um preço válido."); return; }
@@ -194,6 +196,9 @@ function ProductForm({ product, onDone }: { product: Row | null; onDone: () => v
     if (!Number.isFinite(stock) || stock < 0) { setError("Estoque inválido."); return; }
     if (!Number.isFinite(deliveryDays) || deliveryDays < 1 || deliveryDays > 90)
       { setError("Prazo de entrega entre 1 e 90 dias."); return; }
+
+    if (!weight || weight <= 0 || weight > 30) { setError("Peso entre 0,01 e 30 kg."); return; }
+    if (dims.some((d) => !Number.isFinite(d) || d < 1 || d > 100)) { setError("Medidas entre 1 e 100 cm."); return; }
 
     const id = product?.id ?? slugify(name);
     if (id.length < 2) { setError("Nome inválido."); return; }
@@ -211,6 +216,10 @@ function ProductForm({ product, onDone }: { product: Row | null; onDone: () => v
         promo_until: promoPrice != null && promoUntil ? new Date(`${promoUntil}T23:59:59-03:00`).toISOString() : null,
         stock,
         delivery_days: deliveryDays,
+        weight_kg: weight,
+        length_cm: dims[0]!,
+        width_cm: dims[1]!,
+        height_cm: dims[2]!,
         badge: s("badge") || null,
         sort_order: Math.floor(Number(s("sort_order") || "0")) || 0,
         active,
@@ -278,6 +287,21 @@ function ProductForm({ product, onDone }: { product: Row | null; onDone: () => v
         </Field>
         <Field label="Prazo de entrega (dias)" htmlFor="delivery_days">
           <Input id="delivery_days" name="delivery_days" type="number" min={1} max={90} defaultValue={product?.delivery_days ?? 7} className="h-11 rounded-xl" />
+        </Field>
+      </div>
+      <div className="grid gap-4 rounded-2xl border border-border p-4 sm:grid-cols-4">
+        <p className="eyebrow text-muted-foreground sm:col-span-4">Embalagem para o frete</p>
+        <Field label="Peso (kg)" htmlFor="weight_kg">
+          <Input id="weight_kg" name="weight_kg" inputMode="decimal" defaultValue={String(product?.weight_kg ?? 0.3).replace(".", ",")} className="h-11 rounded-xl" />
+        </Field>
+        <Field label="Comprimento (cm)" htmlFor="length_cm">
+          <Input id="length_cm" name="length_cm" type="number" min={1} defaultValue={product?.length_cm ?? 16} className="h-11 rounded-xl" />
+        </Field>
+        <Field label="Largura (cm)" htmlFor="width_cm">
+          <Input id="width_cm" name="width_cm" type="number" min={1} defaultValue={product?.width_cm ?? 11} className="h-11 rounded-xl" />
+        </Field>
+        <Field label="Altura (cm)" htmlFor="height_cm">
+          <Input id="height_cm" name="height_cm" type="number" min={1} defaultValue={product?.height_cm ?? 6} className="h-11 rounded-xl" />
         </Field>
       </div>
       <div className="grid gap-4 rounded-2xl bg-copper/10 p-4 sm:grid-cols-2">

@@ -39,9 +39,17 @@ export interface OrderDraft {
   /** Longest delivery time among the products, in days. */
   deliveryDays: number;
   couponCode: string | null;
+  /** Carrier service chosen by the customer, when shipping was quoted by CEP. */
+  shippingService: string | null;
 }
 
-export type CheckoutErrorCode = "carrinho_vazio" | "produto_indisponivel" | "sem_estoque" | "cupom_invalido";
+export interface ShippingChoice {
+  service: string;
+  price: number;
+  days: number;
+}
+
+export type CheckoutErrorCode = "frete_indisponivel" | "carrinho_vazio" | "produto_indisponivel" | "sem_estoque" | "cupom_invalido";
 
 export class CheckoutError extends Error {
   constructor(
@@ -73,6 +81,7 @@ export function buildOrder(
   catalog: { products: Pick<ShopProduct, "id" | "name" | "price" | "promoPrice" | "promoUntil" | "stock" | "deliveryDays">[]; settings: StoreSettings },
   coupon: Coupon | null = null,
   now: Date = new Date(),
+  shippingChoice: ShippingChoice | null = null,
 ): OrderDraft {
   const merged = new Map<string, number>();
   for (const line of cart) {
@@ -107,7 +116,9 @@ export function buildOrder(
   const afterDiscount = round2(subtotal - discount);
   const { shippingFee, freeShippingMin } = catalog.settings;
   const freeByMinimum = freeShippingMin != null && afterDiscount >= freeShippingMin;
-  const shipping = freeShippingByCoupon || freeByMinimum ? 0 : round2(shippingFee);
+  const baseShipping = shippingChoice ? shippingChoice.price : shippingFee;
+  const shipping = freeShippingByCoupon || freeByMinimum ? 0 : round2(baseShipping);
+  if (shippingChoice) deliveryDays = Math.max(deliveryDays, shippingChoice.days);
 
   return {
     lines,
@@ -117,6 +128,7 @@ export function buildOrder(
     total: round2(afterDiscount + shipping),
     deliveryDays,
     couponCode: coupon?.code ?? null,
+    shippingService: shippingChoice?.service ?? null,
   };
 }
 

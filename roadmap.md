@@ -13,7 +13,9 @@
 - [x] Assinatura mensal dos planos e pagamento do carrinho pelo Mercado Pago (código pronto)
 - [x] Área administrativa: pedidos/entregas (status, rastreio, prazo), pagamentos, planos, assinaturas, produtos (preço, promoção, estoque, prazo), cupons, frete, clientes, links de afiliado
 - [x] Conta raul.sistema.francisco@gmail.com como administradora
-- [ ] Ativar Mercado Pago — aguardando a chave de acesso (Access Token) do Raul
+- [x] Configurações no painel: pagamentos (Mercado Pago, teste/produção) e frete por CEP (Correios e Jadlog), peso/medidas, recibo de pedido pago
+- [ ] Ativar Mercado Pago — Raul cola o Access Token em Admin → Configurações
+- [ ] Ativar frete por CEP — Raul cola o token do Melhor Envio e o CEP de origem
 - [ ] E-mails automáticos nas mudanças de status do pedido, com rastreio e previsão de entrega — aguardando configuração do domínio de envio
 - [ ] Links de afiliado reais (Mercado Livre e TikTok Shop) — Raul cola pelo painel em Links de afiliado
 - [ ] Confirmar produtos próprios, preços, estoque e frete — Raul ajusta pelo painel
