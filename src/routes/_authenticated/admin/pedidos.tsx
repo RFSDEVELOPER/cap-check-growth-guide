@@ -1,6 +1,6 @@
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
-import { AlertTriangle, Loader2, Search } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { AlertTriangle, FileText, Loader2, Search } from "lucide-react";
 import { useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
@@ -198,6 +198,13 @@ function OrderDetail({ order, onDone }: { order: OrderRow; onDone: () => void })
     <div className="pb-10">
       <SheetHeader className="px-0">
         <SheetTitle className="font-display text-2xl">Pedido #{order.id.slice(0, 8)}</SheetTitle>
+        {order.status === "pago" && (
+          <Button asChild variant="pill-outline" size="sm" className="w-fit">
+            <Link to="/admin/recibo/$id" params={{ id: order.id }} target="_blank">
+              <FileText /> Gerar recibo
+            </Link>
+          </Button>
+        )}
       </SheetHeader>
       <div className="mt-2 flex flex-wrap gap-1.5">
         <Pill tone={paymentTone(order.status)}>{STATUS_LABEL[order.status] ?? order.status}</Pill>

@@ -56,7 +56,7 @@ function AdminLayout() {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-md">
+      <header className="print:hidden sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-md">
         <div className="flex h-14 items-center justify-between gap-3 px-4 md:px-6">
           <div className="flex items-center gap-3">
             <Logo />
@@ -95,7 +95,7 @@ function AdminLayout() {
       </header>
 
       <div className="flex">
-        <aside className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-64 shrink-0 border-r border-border/70 p-4 lg:block">
+        <aside className="print:hidden sticky top-14 hidden h-[calc(100vh-3.5rem)] w-64 shrink-0 border-r border-border/70 p-4 lg:block">
           <nav className="grid gap-1" aria-label="Administração">
             {NAV.map((item) => (
               <Link
@@ -109,7 +109,7 @@ function AdminLayout() {
             ))}
           </nav>
         </aside>
-        <main className="min-w-0 flex-1 px-4 pb-20 pt-8 md:px-8">
+        <main className="min-w-0 flex-1 px-4 pb-20 pt-8 md:px-8 print:p-0">
           <Outlet />
         </main>
       </div>
