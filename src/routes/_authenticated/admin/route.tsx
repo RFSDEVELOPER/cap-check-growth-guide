@@ -48,7 +48,7 @@ const NAV = [
   { to: "/admin/assinaturas", label: "Assinaturas", icon: CreditCard },
   { to: "/admin/clientes", label: "Clientes", icon: Users },
   { to: "/admin/afiliados", label: "Links de afiliado", icon: Link2 },
-  { to: "/admin/configuracoes", label: "Frete e loja", icon: Settings },
+  { to: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
 
 function AdminLayout() {

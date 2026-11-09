@@ -105,7 +105,8 @@ function Pagamentos() {
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const f = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const f = new FormData(form);
     setBusy(true);
     try {
       const { error } = await supabase
@@ -120,7 +121,7 @@ function Pagamentos() {
         .eq("id", true);
       if (error) throw error;
       await saveSecretsFrom(f, ["mp_access_token_teste", "mp_access_token_producao", "mp_webhook_secret"]);
-      e.currentTarget?.reset?.();
+      form.reset();
       queryClient.invalidateQueries({ queryKey: paymentSettingsQuery.queryKey });
       toast.success("Pagamentos salvos");
     } catch (err) {
