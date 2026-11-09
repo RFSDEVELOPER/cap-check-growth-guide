@@ -42,9 +42,9 @@ export const Route = createFileRoute("/_authenticated/admin/configuracoes")({
 const money = (v: number | string | null | undefined) => (v == null ? "" : String(v).replace(".", ","));
 type SecretName = "mp_access_token_teste" | "mp_access_token_producao" | "mp_webhook_secret" | "melhorenvio_token";
 
-function SecretInput({ id, label, hint, last4 }: { id: SecretName; label: string; hint?: string; last4?: string | undefined }) {
+function SecretInput({ id, label, hint, last4 }: { id: SecretName; label: string; hint?: string | undefined; last4?: string | undefined }) {
   return (
-    <Field label={label} htmlFor={id} hint={hint}>
+    <Field label={label} htmlFor={id} {...(hint ? { hint } : {})}>
       <div className="flex items-center gap-2">
         <Input
           id={id}
