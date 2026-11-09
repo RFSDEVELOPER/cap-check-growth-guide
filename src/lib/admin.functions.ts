@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { getMpToken } from "@/lib/credentials.server";
 import { applyPreapproval, mpRequest, syncOrder } from "@/lib/mercadopago.server";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -17,7 +18,7 @@ export const adminSyncPayments = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context);
-    const token = process.env["MERCADOPAGO_ACCESS_TOKEN"];
+    const token = await getMpToken();
     if (!token) return { ok: false as const, reason: "pagamento_indisponivel" as const, synced: 0 };
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -67,7 +68,7 @@ export const adminCancelSubscription = createServerFn({ method: "POST" })
     if (!sub) return { ok: false as const, reason: "nao_encontrada" as const };
 
     if (sub.mp_preapproval_id) {
-      const token = process.env["MERCADOPAGO_ACCESS_TOKEN"];
+      const token = await getMpToken();
       if (!token) return { ok: false as const, reason: "pagamento_indisponivel" as const };
       try {
         await mpRequest(token, `/preapproval/${encodeURIComponent(sub.mp_preapproval_id)}`, {
