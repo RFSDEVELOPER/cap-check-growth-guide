@@ -27,6 +27,7 @@ import { Route as AuthenticatedAdminPedidosRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminPlanosRouteImport } from './routes/_authenticated/admin/planos'
 import { Route as AuthenticatedAdminProdutosRouteImport } from './routes/_authenticated/admin/produtos'
 import { Route as AuthenticatedAdminPromocoesRouteImport } from './routes/_authenticated/admin/promocoes'
+import { Route as AuthenticatedAdminReciboIdRouteImport } from './routes/_authenticated/admin/recibo.$id'
 import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api/public/mercadopago/webhook'
 
 const IndexRoute = IndexRouteImport.update({
@@ -126,6 +127,12 @@ const AuthenticatedAdminPromocoesRoute =
     path: '/promocoes',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminReciboIdRoute =
+  AuthenticatedAdminReciboIdRouteImport.update({
+    id: '/recibo/$id',
+    path: '/recibo/$id',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const ApiPublicMercadopagoWebhookRoute =
   ApiPublicMercadopagoWebhookRouteImport.update({
     id: '/api/public/mercadopago/webhook',
@@ -151,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/admin/produtos': typeof AuthenticatedAdminProdutosRoute
   '/admin/promocoes': typeof AuthenticatedAdminPromocoesRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/admin/recibo/$id': typeof AuthenticatedAdminReciboIdRoute
   '/api/public/mercadopago/webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -170,6 +178,7 @@ export interface FileRoutesByTo {
   '/admin/produtos': typeof AuthenticatedAdminProdutosRoute
   '/admin/promocoes': typeof AuthenticatedAdminPromocoesRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/admin/recibo/$id': typeof AuthenticatedAdminReciboIdRoute
   '/api/public/mercadopago/webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
 export interface FileRoutesById {
@@ -192,6 +201,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/produtos': typeof AuthenticatedAdminProdutosRoute
   '/_authenticated/admin/promocoes': typeof AuthenticatedAdminPromocoesRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/admin/recibo/$id': typeof AuthenticatedAdminReciboIdRoute
   '/api/public/mercadopago/webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
 export interface FileRouteTypes {
@@ -214,6 +224,7 @@ export interface FileRouteTypes {
     | '/admin/produtos'
     | '/admin/promocoes'
     | '/admin/'
+    | '/admin/recibo/$id'
     | '/api/public/mercadopago/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -233,6 +244,7 @@ export interface FileRouteTypes {
     | '/admin/produtos'
     | '/admin/promocoes'
     | '/admin'
+    | '/admin/recibo/$id'
     | '/api/public/mercadopago/webhook'
   id:
     | '__root__'
@@ -254,6 +266,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/produtos'
     | '/_authenticated/admin/promocoes'
     | '/_authenticated/admin/'
+    | '/_authenticated/admin/recibo/$id'
     | '/api/public/mercadopago/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -396,6 +409,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminPromocoesRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/recibo/$id': {
+      id: '/_authenticated/admin/recibo/$id'
+      path: '/recibo/$id'
+      fullPath: '/admin/recibo/$id'
+      preLoaderRoute: typeof AuthenticatedAdminReciboIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/api/public/mercadopago/webhook': {
       id: '/api/public/mercadopago/webhook'
       path: '/api/public/mercadopago/webhook'
@@ -416,6 +436,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminProdutosRoute: typeof AuthenticatedAdminProdutosRoute
   AuthenticatedAdminPromocoesRoute: typeof AuthenticatedAdminPromocoesRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminReciboIdRoute: typeof AuthenticatedAdminReciboIdRoute
 }
 
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
@@ -429,6 +450,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminProdutosRoute: AuthenticatedAdminProdutosRoute,
     AuthenticatedAdminPromocoesRoute: AuthenticatedAdminPromocoesRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+    AuthenticatedAdminReciboIdRoute: AuthenticatedAdminReciboIdRoute,
   }
 
 const AuthenticatedAdminRouteRouteWithChildren =
