@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Aplicar correções do arquivo etapa3, preservando contas/configurações, e verificar questionário, carrinho e segurança dos pagamentos
+
 - [x] Adaptar início, questionário, rodapé e FAQ para produtos capilares sem prescrição, sem promessas de telemedicina ou receitas
 
 - [x] Trocar acesso Lovable por Apple, manter e-mail/senha e cadastro com “Já sou cliente” e “Novo usuário”
