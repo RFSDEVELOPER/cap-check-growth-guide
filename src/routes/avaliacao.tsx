@@ -22,12 +22,14 @@ export const Route = createFileRoute("/avaliacao")({
       { title: "Questionário de rotina capilar — Cia Cap" },
       {
         name: "description",
-        content: "Responda 6 perguntas sobre sua rotina e conheça opções de cuidados capilares sem prescrição. Não substitui uma avaliação de saúde.",
+        content:
+          "Responda 6 perguntas sobre sua rotina e conheça opções de cuidados capilares sem prescrição. Não substitui uma avaliação de saúde.",
       },
       { property: "og:title", content: "Questionário de rotina capilar — Cia Cap" },
       {
         property: "og:description",
-        content: "6 perguntas para conhecer suas preferências e explorar produtos para sua rotina capilar.",
+        content:
+          "6 perguntas para conhecer suas preferências e explorar produtos para sua rotina capilar.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -42,13 +44,24 @@ function Avaliacao() {
   const done = step >= QUIZ.length;
   const question = QUIZ[step];
 
+  // Ignore extra taps while the next question is on its way, otherwise a double tap skips one.
+  const advancing = useRef(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(timer.current), []);
+
   const choose = (value: string) => {
-    if (!question) return;
+    if (!question || advancing.current) return;
+    advancing.current = true;
     setAnswers((a) => ({ ...a, [question.id]: value }));
-    setTimeout(() => setStep((s) => s + 1), 220);
+    timer.current = setTimeout(() => {
+      advancing.current = false;
+      setStep((s) => s + 1);
+    }, 220);
   };
 
   const restart = () => {
+    clearTimeout(timer.current);
+    advancing.current = false;
     setAnswers({});
     setStep(0);
   };
@@ -157,7 +170,10 @@ function SaveResult({ answers }: { answers: QuizAnswers }) {
   }
   return (
     <div className="mx-auto mt-8 flex max-w-2xl flex-col items-center gap-3 rounded-2xl bg-secondary/70 p-5 text-center text-sm sm:flex-row sm:text-left">
-      <p className="flex-1">Crie sua conta para salvar suas respostas e consultar suas preferências de cuidados capilares.</p>
+      <p className="flex-1">
+        Crie sua conta para salvar suas respostas e consultar suas preferências de cuidados
+        capilares.
+      </p>
       <Button asChild variant="pill" className="shrink-0">
         <Link to="/auth" search={{ redirect: "/conta" }}>
           Salvar na minha conta
@@ -170,10 +186,15 @@ function SaveResult({ answers }: { answers: QuizAnswers }) {
 function Result({ answers, onRestart }: { answers: QuizAnswers; onRestart: () => void }) {
   const { plans, affiliates: PRODUCTS } = useStorefront();
   const result = recommendPlan(answers);
-  const plan = plans.find((p) => p.id === result.plan) ?? plans.find((p) => p.highlight) ?? plans[0];
-  const products = PRODUCTS.filter((p) =>
-    result.plan === "essencial" ? p.category === "limpeza" : p.category !== "finalizacao",
-  ).slice(0, 3);
+  const noPlan = result.plan === "nenhum";
+  const plan = noPlan
+    ? undefined
+    : (plans.find((p) => p.id === result.plan) ?? plans.find((p) => p.highlight) ?? plans[0]);
+  const products = noPlan
+    ? []
+    : PRODUCTS.filter((p) =>
+        result.plan === "essencial" ? p.category === "limpeza" : p.category !== "finalizacao",
+      ).slice(0, 3);
 
   return (
     <main className="container-site animate-rise pb-20 pt-6">
@@ -182,7 +203,17 @@ function Result({ answers, onRestart }: { answers: QuizAnswers; onRestart: () =>
           Sua rotina capilar
         </span>
         <h1 className="mt-6 text-4xl leading-tight md:text-5xl">
-          Uma opção de rotina: plano <em className="font-light italic text-copper">{plan?.name ?? result.plan}</em>
+          {noPlan ? (
+            <>
+              Seu caso merece{" "}
+              <em className="font-light italic text-copper">avaliação profissional</em>
+            </>
+          ) : (
+            <>
+              Uma opção de rotina: plano{" "}
+              <em className="font-light italic text-copper">{plan?.name ?? result.plan}</em>
+            </>
+          )}
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-muted-foreground">{result.summary}</p>
       </div>
@@ -204,17 +235,20 @@ function Result({ answers, onRestart }: { answers: QuizAnswers; onRestart: () =>
       </div>
 
       <p className="mx-auto mt-6 max-w-md text-center text-xs text-muted-foreground">
-        Sugestão de rotina, não diagnóstico ou prescrição. Confira o rótulo e as restrições de cada produto. Não há garantia de resultados.
+        Sugestão de rotina, não diagnóstico ou prescrição. Confira o rótulo e as restrições de cada
+        produto. Não há garantia de resultados.
       </p>
 
-      <section className="mt-20">
-        <h2 className="text-center text-3xl">Produtos para conhecer</h2>
-        <div className="mx-auto mt-8 grid max-w-5xl gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {products.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
-      </section>
+      {products.length > 0 && (
+        <section className="mt-20">
+          <h2 className="text-center text-3xl">Produtos para conhecer</h2>
+          <div className="mx-auto mt-8 grid max-w-5xl gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {products.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="mt-12 text-center">
         <Button variant="ghost" onClick={onRestart}>

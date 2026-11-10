@@ -6,6 +6,17 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,8 +27,13 @@ import type { Tables } from "@/integrations/supabase/types";
 import { formatBRL } from "@/lib/catalog";
 import { storefrontQuery, useStorefront } from "@/lib/storefront";
 import { useCart } from "@/lib/cart";
-import { FULFILLMENT_LABEL, STATUS_LABEL, type FulfillmentStatus, type OrderLine } from "@/lib/checkout";
-import { syncMyPayments } from "@/lib/payments.functions";
+import {
+  FULFILLMENT_LABEL,
+  STATUS_LABEL,
+  type FulfillmentStatus,
+  type OrderLine,
+} from "@/lib/checkout";
+import { cancelMySubscription, retryOrderPayment, syncMyPayments } from "@/lib/payments.functions";
 import { PENDING_QUIZ_KEY } from "@/lib/safe-redirect";
 import { cn } from "@/lib/utils";
 
@@ -44,9 +60,12 @@ const accountQuery = queryOptions({
 });
 
 export const Route = createFileRoute("/_authenticated/conta")({
-  validateSearch: (s: Record<string, unknown>): { pedido?: string; assinatura?: string } => ({
+  validateSearch: (
+    s: Record<string, unknown>,
+  ): { pedido?: string; assinatura?: string; resultado?: string } => ({
     ...(typeof s["pedido"] === "string" ? { pedido: s["pedido"] } : {}),
     ...(typeof s["assinatura"] === "string" ? { assinatura: s["assinatura"] } : {}),
+    ...(typeof s["resultado"] === "string" ? { resultado: s["resultado"] } : {}),
   }),
   loader: ({ context }) =>
     Promise.all([
@@ -68,14 +87,23 @@ export const Route = createFileRoute("/_authenticated/conta")({
 
 const profileSchema = z.object({
   full_name: z.string().trim().min(2, "Informe seu nome").max(100),
-  phone: z.string().trim().regex(/^[\d\s()+-]{10,20}$/, "Telefone inválido"),
-  cep: z.string().trim().regex(/^\d{5}-?\d{3}$/, "CEP inválido"),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^[\d\s()+-]{10,20}$/, "Telefone inválido"),
+  cep: z
+    .string()
+    .trim()
+    .regex(/^\d{5}-?\d{3}$/, "CEP inválido"),
   street: z.string().trim().min(2, "Informe a rua").max(150),
   number: z.string().trim().min(1, "Informe o número").max(20),
   complement: z.string().trim().max(80).optional().or(z.literal("")),
   neighborhood: z.string().trim().min(2, "Informe o bairro").max(80),
   city: z.string().trim().min(2, "Informe a cidade").max(80),
-  state: z.string().trim().regex(/^[A-Za-z]{2}$/, "UF com 2 letras"),
+  state: z
+    .string()
+    .trim()
+    .regex(/^[A-Za-z]{2}$/, "UF com 2 letras"),
 });
 
 const dateBR = (iso: string) => new Date(iso).toLocaleDateString("pt-BR");
@@ -84,7 +112,9 @@ function Conta() {
   const { data } = useSuspenseQuery(accountQuery);
   const { plans } = useStorefront();
   const planName = (id: string) => plans.find((p) => p.id === id)?.name ?? id;
-  const { pedido, assinatura } = Route.useSearch();
+  const quizPlan = (id: string) =>
+    id === "nenhum" ? "sem plano (avaliação profissional)" : planName(id);
+  const { pedido, assinatura, resultado } = Route.useSearch();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const sync = useServerFn(syncMyPayments);
@@ -104,7 +134,9 @@ function Conta() {
           const parsed = JSON.parse(pending);
           const { data: auth } = await supabase.auth.getUser();
           if (!auth.user) return;
-          const { error } = await supabase.from("quiz_results").insert({ ...parsed, user_id: auth.user.id });
+          const { error } = await supabase
+            .from("quiz_results")
+            .insert({ ...parsed, user_id: auth.user.id });
           if (!error) {
             toast.success("Sua avaliação foi salva na conta");
             queryClient.invalidateQueries({ queryKey: ["account"] });
@@ -115,9 +147,18 @@ function Conta() {
       })();
     }
 
-    if (pedido) {
+    if (pedido && resultado === "falha") {
+      // Payment was not completed: keep the items so the patient can try again.
+      toast.error("O pagamento não foi concluído. Seus itens continuam no carrinho.", {
+        action: { label: "Voltar ao carrinho", onClick: () => navigate({ to: "/carrinho" }) },
+      });
+    } else if (pedido) {
       cart.clear();
-      toast.success("Pedido recebido! O status atualiza assim que o pagamento for confirmado.");
+      toast.success(
+        resultado === "ok"
+          ? "Pagamento recebido! O status atualiza assim que for confirmado."
+          : "Pedido recebido! O status atualiza assim que o pagamento for confirmado.",
+      );
     }
     if (assinatura) toast.success("Assinatura enviada ao Mercado Pago. Acompanhe o status abaixo.");
 
@@ -126,7 +167,7 @@ function Conta() {
         if (r.synced > 0) queryClient.invalidateQueries({ queryKey: ["account"] });
       })
       .catch(() => undefined);
-  }, [pedido, assinatura, cart, queryClient, sync]);
+  }, [pedido, assinatura, resultado, cart, queryClient, sync, navigate]);
 
   const activeSub = data.subscriptions.find((s) => s.status === "ativa") ?? data.subscriptions[0];
 
@@ -161,14 +202,21 @@ function Conta() {
               {activeSub ? (
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="font-display text-2xl">
-                      Plano {planName(activeSub.plan_id)}
-                    </p>
+                    <p className="font-display text-2xl">Plano {planName(activeSub.plan_id)}</p>
                     <p className="text-sm text-muted-foreground">
-                      {formatBRL(Number(activeSub.amount))}/mês · desde {dateBR(activeSub.created_at)}
+                      {formatBRL(Number(activeSub.amount))}/mês · desde{" "}
+                      {dateBR(activeSub.created_at)}
                     </p>
                   </div>
-                  <StatusPill status={activeSub.status} />
+                  <div className="flex flex-col items-end gap-2">
+                    <StatusPill status={activeSub.status} />
+                    {["ativa", "pendente", "pausada"].includes(activeSub.status) && (
+                      <CancelSubscriptionButton
+                        id={activeSub.id}
+                        onDone={() => queryClient.invalidateQueries({ queryKey: ["account"] })}
+                      />
+                    )}
+                  </div>
                 </div>
               ) : (
                 <div>
@@ -186,7 +234,7 @@ function Conta() {
                   {data.quiz.map((q) => (
                     <li key={q.id} className="flex items-center justify-between py-3 text-sm">
                       <span>
-                        Indicação: <strong>{planName(q.plan)}</strong>
+                        Indicação: <strong>{quizPlan(q.plan)}</strong>
                         {q.needs_dermatologist && (
                           <span className="ml-2 text-copper">· recomenda dermatologista</span>
                         )}
@@ -214,7 +262,10 @@ function Conta() {
                 {data.orders.map((o) => {
                   const items = (o.items as unknown as OrderLine[]) ?? [];
                   return (
-                    <li key={o.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
+                    <li
+                      key={o.id}
+                      className="flex flex-wrap items-center justify-between gap-3 py-4"
+                    >
                       <div className="text-sm">
                         <p className="font-medium">
                           {items.map((i) => `${i.qty}× ${i.name}`).join(", ")}
@@ -227,9 +278,11 @@ function Conta() {
                           <p className="mt-1 text-muted-foreground">
                             Entrega:{" "}
                             <strong className="text-foreground">
-                              {FULFILLMENT_LABEL[o.fulfillment_status as FulfillmentStatus] ?? o.fulfillment_status}
+                              {FULFILLMENT_LABEL[o.fulfillment_status as FulfillmentStatus] ??
+                                o.fulfillment_status}
                             </strong>
-                            {o.estimated_delivery && o.fulfillment_status !== "entregue" &&
+                            {o.estimated_delivery &&
+                              o.fulfillment_status !== "entregue" &&
                               ` · previsão ${new Date(`${o.estimated_delivery}T12:00:00`).toLocaleDateString("pt-BR")}`}
                             {o.tracking_code && (
                               <>
@@ -242,7 +295,13 @@ function Conta() {
                         )}
                         {o.customer_note && <p className="mt-1 text-copper">{o.customer_note}</p>}
                       </div>
-                      <StatusPill status={o.status} />
+                      <div className="flex items-center gap-3">
+                        {RETRYABLE.includes(o.status) &&
+                          Date.now() - new Date(o.created_at).getTime() < 24 * 60 * 60_000 && (
+                            <RetryPaymentButton orderId={o.id} />
+                          )}
+                        <StatusPill status={o.status} />
+                      </div>
                     </li>
                   );
                 })}
@@ -260,6 +319,91 @@ function Conta() {
       </main>
       <SiteFooter />
     </div>
+  );
+}
+
+const RETRYABLE = ["pendente", "recusado", "cancelado"];
+
+const RETRY_ERRORS: Record<string, string> = {
+  pagamento_indisponivel: "O pagamento online está indisponível no momento. Tente mais tarde.",
+  nao_encontrado: "Pedido não encontrado.",
+  ja_pago: "Este pedido já foi pago. Atualizando o status.",
+  sem_estoque: "Algum item deste pedido está sem estoque. Faça um novo pedido pela loja.",
+  expirado: "Este pedido é antigo. Monte um novo pedido pelo carrinho para ver os preços atuais.",
+  falha: "Não foi possível abrir o pagamento agora. Tente novamente.",
+};
+
+/** Opens a new Mercado Pago payment link for an unpaid order. */
+function RetryPaymentButton({ orderId }: { orderId: string }) {
+  const retry = useServerFn(retryOrderPayment);
+  const queryClient = useQueryClient();
+  const [busy, setBusy] = useState(false);
+
+  async function onClick() {
+    setBusy(true);
+    try {
+      const res = await retry({ data: { orderId, origin: window.location.origin } });
+      if ("url" in res) {
+        window.location.href = res.url;
+        return;
+      }
+      toast.error(RETRY_ERRORS[res.error] ?? "Não foi possível abrir o pagamento agora. Tente novamente.");
+      if (res.error === "ja_pago") queryClient.invalidateQueries({ queryKey: ["account"] });
+    } catch {
+      toast.error("Não foi possível abrir o pagamento agora. Tente novamente.");
+    }
+    setBusy(false);
+  }
+
+  return (
+    <Button size="sm" variant="pill-outline" onClick={onClick} disabled={busy}>
+      {busy && <Loader2 className="animate-spin" />} Pagar novamente
+    </Button>
+  );
+}
+
+/** Asks for confirmation and cancels the patient's own subscription. */
+function CancelSubscriptionButton({ id, onDone }: { id: string; onDone: () => void }) {
+  const cancel = useServerFn(cancelMySubscription);
+  const [busy, setBusy] = useState(false);
+
+  async function confirm() {
+    setBusy(true);
+    try {
+      const res = await cancel({ data: { id } });
+      if (res.ok) {
+        toast.success("Assinatura cancelada. Não haverá novas cobranças.");
+        onDone();
+      } else {
+        toast.error("Não foi possível cancelar agora. Tente novamente ou fale com o atendimento.");
+      }
+    } catch {
+      toast.error("Não foi possível cancelar agora. Tente novamente ou fale com o atendimento.");
+    }
+    setBusy(false);
+  }
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button size="sm" variant="ghost" disabled={busy}>
+          Cancelar assinatura
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Cancelar a assinatura?</AlertDialogTitle>
+          <AlertDialogDescription>
+            As próximas cobranças mensais serão interrompidas. O que já foi pago não é reembolsado
+            automaticamente.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Manter assinatura</AlertDialogCancel>
+          <AlertDialogAction onClick={confirm}>Cancelar assinatura</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 
@@ -362,11 +506,29 @@ function ProfileForm({ profile }: { profile: Profile | null }) {
   const v = (k: keyof Profile) => (profile?.[k] as string | null) ?? "";
 
   return (
-    <section id="endereco" className="scroll-mt-24 rounded-3xl border border-border bg-card p-6 md:p-7">
+    <section
+      id="endereco"
+      className="scroll-mt-24 rounded-3xl border border-border bg-card p-6 md:p-7"
+    >
       <h2 className="text-xl">Meus dados e endereço de entrega</h2>
       <form ref={formRef} onSubmit={onSubmit} className="mt-5 grid gap-4 sm:grid-cols-6" noValidate>
-        <F name="full_name" label="Nome completo" def={v("full_name")} err={errors["full_name"]} span="sm:col-span-6" autoComplete="name" />
-        <F name="phone" label="Telefone (WhatsApp)" def={v("phone")} err={errors["phone"]} span="sm:col-span-3" type="tel" autoComplete="tel" />
+        <F
+          name="full_name"
+          label="Nome completo"
+          def={v("full_name")}
+          err={errors["full_name"]}
+          span="sm:col-span-6"
+          autoComplete="name"
+        />
+        <F
+          name="phone"
+          label="Telefone (WhatsApp)"
+          def={v("phone")}
+          err={errors["phone"]}
+          span="sm:col-span-3"
+          type="tel"
+          autoComplete="tel"
+        />
         <F
           name="cep"
           label="CEP"
@@ -377,14 +539,60 @@ function ProfileForm({ profile }: { profile: Profile | null }) {
           autoComplete="postal-code"
           onBlur={(e) => lookupCep(e.currentTarget.value)}
         />
-        <F name="street" label="Rua" def={v("street")} err={errors["street"]} span="sm:col-span-4" autoComplete="address-line1" />
-        <F name="number" label="Número" def={v("number")} err={errors["number"]} span="sm:col-span-2" />
-        <F name="complement" label="Complemento" def={v("complement")} err={errors["complement"]} span="sm:col-span-3" />
-        <F name="neighborhood" label="Bairro" def={v("neighborhood")} err={errors["neighborhood"]} span="sm:col-span-3" />
-        <F name="city" label="Cidade" def={v("city")} err={errors["city"]} span="sm:col-span-4" autoComplete="address-level2" />
-        <F name="state" label="UF" def={v("state")} err={errors["state"]} span="sm:col-span-2" maxLength={2} autoComplete="address-level1" />
+        <F
+          name="street"
+          label="Rua"
+          def={v("street")}
+          err={errors["street"]}
+          span="sm:col-span-4"
+          autoComplete="address-line1"
+        />
+        <F
+          name="number"
+          label="Número"
+          def={v("number")}
+          err={errors["number"]}
+          span="sm:col-span-2"
+        />
+        <F
+          name="complement"
+          label="Complemento"
+          def={v("complement")}
+          err={errors["complement"]}
+          span="sm:col-span-3"
+        />
+        <F
+          name="neighborhood"
+          label="Bairro"
+          def={v("neighborhood")}
+          err={errors["neighborhood"]}
+          span="sm:col-span-3"
+        />
+        <F
+          name="city"
+          label="Cidade"
+          def={v("city")}
+          err={errors["city"]}
+          span="sm:col-span-4"
+          autoComplete="address-level2"
+        />
+        <F
+          name="state"
+          label="UF"
+          def={v("state")}
+          err={errors["state"]}
+          span="sm:col-span-2"
+          maxLength={2}
+          autoComplete="address-level1"
+        />
         <div className="sm:col-span-6">
-          <Button type="submit" variant="pill" size="xl" disabled={busy} className="w-full sm:w-auto">
+          <Button
+            type="submit"
+            variant="pill"
+            size="xl"
+            disabled={busy}
+            className="w-full sm:w-auto"
+          >
             {busy && <Loader2 className="animate-spin" />} Salvar dados
           </Button>
         </div>
@@ -410,7 +618,14 @@ function F({
   return (
     <div className={cn("grid gap-1.5", span)}>
       <Label htmlFor={name}>{label}</Label>
-      <Input id={name} name={name} defaultValue={def} className="h-11 rounded-xl" aria-invalid={!!err} {...props} />
+      <Input
+        id={name}
+        name={name}
+        defaultValue={def}
+        className="h-11 rounded-xl"
+        aria-invalid={!!err}
+        {...props}
+      />
       {err && <p className="text-xs text-destructive">{err}</p>}
     </div>
   );

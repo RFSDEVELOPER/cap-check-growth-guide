@@ -4,17 +4,35 @@ import { AlertTriangle, FileText, Loader2, Search } from "lucide-react";
 import { useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
-import { AdminPage, Empty, Field, Pill, fulfillmentTone, paymentTone } from "@/components/admin/AdminUI";
+import {
+  AdminPage,
+  Empty,
+  Field,
+  Pill,
+  fulfillmentTone,
+  paymentTone,
+} from "@/components/admin/AdminUI";
 import { SyncPaymentsButton } from "@/components/admin/SyncPaymentsButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { adminOrdersQuery, dateBR, isLate, shippingOf, type OrderRow } from "@/lib/admin-queries";
 import { formatPrice } from "@/lib/catalog";
-import { FULFILLMENT_LABEL, STATUS_LABEL, type FulfillmentStatus, type OrderLine } from "@/lib/checkout";
+import {
+  FULFILLMENT_LABEL,
+  STATUS_LABEL,
+  type FulfillmentStatus,
+  type OrderLine,
+} from "@/lib/checkout";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/admin/pedidos")({
@@ -61,7 +79,9 @@ function Pedidos() {
       if (!matches(o, filter)) return false;
       if (!term) return true;
       const s = shippingOf(o);
-      return [o.id, s.name, s.email, s.phone, o.tracking_code].some((v) => v?.toLowerCase().includes(term));
+      return [o.id, s.name, s.email, s.phone, o.tracking_code].some((v) =>
+        v?.toLowerCase().includes(term),
+      );
     });
   }, [orders, filter, q]);
 
@@ -84,7 +104,9 @@ function Pedidos() {
                 onClick={() => setFilter(f.id)}
                 className={cn(
                   "shrink-0 rounded-full border px-3 py-1.5 text-sm transition-colors",
-                  filter === f.id ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card hover:bg-secondary",
+                  filter === f.id
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card hover:bg-secondary",
                 )}
               >
                 {f.label} <span className="font-mono text-xs opacity-70">{count}</span>
@@ -122,7 +144,8 @@ function Pedidos() {
                   >
                     <div className="min-w-0">
                       <p className="font-medium">
-                        <span className="font-mono text-muted-foreground">#{o.id.slice(0, 8)}</span> · {s.name ?? "Cliente"}
+                        <span className="font-mono text-muted-foreground">#{o.id.slice(0, 8)}</span>{" "}
+                        · {s.name ?? "Cliente"}
                       </p>
                       <p className="truncate text-muted-foreground">
                         {items.map((i) => `${i.qty}× ${i.name}`).join(", ")}
@@ -130,10 +153,12 @@ function Pedidos() {
                     </div>
                     <div className="text-muted-foreground">
                       <p>
-                        {dateBR(o.created_at)} · <strong className="text-foreground">{formatPrice(Number(o.total))}</strong>
+                        {dateBR(o.created_at)} ·{" "}
+                        <strong className="text-foreground">{formatPrice(Number(o.total))}</strong>
                       </p>
                       <p>
-                        {s.city ? `${s.city}/${s.state}` : "—"} · previsão {dateBR(o.estimated_delivery)}
+                        {s.city ? `${s.city}/${s.state}` : "—"} · previsão{" "}
+                        {dateBR(o.estimated_delivery)}
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-1.5 md:justify-end">
@@ -144,6 +169,9 @@ function Pedidos() {
                         </Pill>
                       )}
                       {isLate(o) && <Pill tone="bad">Atrasado</Pill>}
+                      {(o as { stock_shortage?: boolean }).stock_shortage && (
+                        <Pill tone="bad">Estoque insuficiente</Pill>
+                      )}
                     </div>
                   </button>
                 </li>
@@ -166,7 +194,9 @@ function OrderDetail({ order, onDone }: { order: OrderRow; onDone: () => void })
   const queryClient = useQueryClient();
   const s = shippingOf(order);
   const items = (order.items as unknown as OrderLine[]) ?? [];
-  const [status, setStatus] = useState<FulfillmentStatus>(order.fulfillment_status as FulfillmentStatus);
+  const [status, setStatus] = useState<FulfillmentStatus>(
+    order.fulfillment_status as FulfillmentStatus,
+  );
   const [busy, setBusy] = useState(false);
 
   async function save(e: FormEvent<HTMLFormElement>) {
@@ -183,12 +213,18 @@ function OrderDetail({ order, onDone }: { order: OrderRow; onDone: () => void })
         tracking_code: str("tracking_code"),
         estimated_delivery: str("estimated_delivery"),
         customer_note: str("customer_note"),
-        shipped_at: status === "enviado" || status === "entregue" ? (order.shipped_at ?? now) : order.shipped_at,
+        shipped_at:
+          status === "enviado" || status === "entregue"
+            ? (order.shipped_at ?? now)
+            : order.shipped_at,
         delivered_at: status === "entregue" ? (order.delivered_at ?? now) : null,
       })
       .eq("id", order.id);
     setBusy(false);
-    if (error) { toast.error("Não foi possível salvar o pedido."); return; }
+    if (error) {
+      toast.error("Não foi possível salvar o pedido.");
+      return;
+    }
     toast.success("Pedido atualizado");
     queryClient.invalidateQueries({ queryKey: ["admin", "orders"] });
     onDone();
@@ -236,7 +272,11 @@ function OrderDetail({ order, onDone }: { order: OrderRow; onDone: () => void })
           )}
           <div className="flex justify-between">
             <dt>Frete</dt>
-            <dd>{Number(order.shipping_fee) === 0 ? "Grátis" : formatPrice(Number(order.shipping_fee))}</dd>
+            <dd>
+              {Number(order.shipping_fee) === 0
+                ? "Grátis"
+                : formatPrice(Number(order.shipping_fee))}
+            </dd>
           </div>
           <div className="flex justify-between font-medium">
             <dt>Total</dt>
@@ -280,17 +320,50 @@ function OrderDetail({ order, onDone }: { order: OrderRow; onDone: () => void })
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Transportadora" htmlFor="carrier">
-            <Input id="carrier" name="carrier" defaultValue={order.carrier ?? ""} placeholder="Correios, Jadlog…" className="h-11 rounded-xl" maxLength={60} />
+            <Input
+              id="carrier"
+              name="carrier"
+              defaultValue={order.carrier ?? ""}
+              placeholder="Correios, Jadlog…"
+              className="h-11 rounded-xl"
+              maxLength={60}
+            />
           </Field>
           <Field label="Código de rastreio" htmlFor="tracking_code">
-            <Input id="tracking_code" name="tracking_code" defaultValue={order.tracking_code ?? ""} className="h-11 rounded-xl font-mono" maxLength={60} />
+            <Input
+              id="tracking_code"
+              name="tracking_code"
+              defaultValue={order.tracking_code ?? ""}
+              className="h-11 rounded-xl font-mono"
+              maxLength={60}
+            />
           </Field>
         </div>
-        <Field label="Previsão de entrega" htmlFor="estimated_delivery" hint="O cliente vê essa data na conta dele.">
-          <Input id="estimated_delivery" name="estimated_delivery" type="date" defaultValue={order.estimated_delivery ?? ""} className="h-11 rounded-xl" />
+        <Field
+          label="Previsão de entrega"
+          htmlFor="estimated_delivery"
+          hint="O cliente vê essa data na conta dele."
+        >
+          <Input
+            id="estimated_delivery"
+            name="estimated_delivery"
+            type="date"
+            defaultValue={order.estimated_delivery ?? ""}
+            className="h-11 rounded-xl"
+          />
         </Field>
-        <Field label="Recado para o cliente" htmlFor="customer_note" hint="Aparece na conta do cliente, junto ao pedido.">
-          <Textarea id="customer_note" name="customer_note" defaultValue={order.customer_note ?? ""} maxLength={300} className="rounded-xl" />
+        <Field
+          label="Recado para o cliente"
+          htmlFor="customer_note"
+          hint="Aparece na conta do cliente, junto ao pedido."
+        >
+          <Textarea
+            id="customer_note"
+            name="customer_note"
+            defaultValue={order.customer_note ?? ""}
+            maxLength={300}
+            className="rounded-xl"
+          />
         </Field>
         <Button type="submit" variant="pill" size="xl" disabled={busy}>
           {busy && <Loader2 className="animate-spin" />} Salvar pedido

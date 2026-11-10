@@ -49,7 +49,12 @@ export interface ShippingChoice {
   days: number;
 }
 
-export type CheckoutErrorCode = "frete_indisponivel" | "carrinho_vazio" | "produto_indisponivel" | "sem_estoque" | "cupom_invalido";
+export type CheckoutErrorCode =
+  | "frete_indisponivel"
+  | "carrinho_vazio"
+  | "produto_indisponivel"
+  | "sem_estoque"
+  | "cupom_invalido";
 
 export class CheckoutError extends Error {
   constructor(
@@ -63,7 +68,11 @@ export class CheckoutError extends Error {
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 /** Why a coupon can't be used for this subtotal, or null when it is valid. */
-export function couponProblem(coupon: Coupon, subtotal: number, now: Date = new Date()): string | null {
+export function couponProblem(
+  coupon: Coupon,
+  subtotal: number,
+  now: Date = new Date(),
+): string | null {
   if (!coupon.active) return "Cupom desativado";
   if (coupon.starts_at && new Date(coupon.starts_at) > now) return "Cupom ainda não começou";
   if (coupon.ends_at && new Date(coupon.ends_at) <= now) return "Cupom expirado";
@@ -78,7 +87,13 @@ export function couponProblem(coupon: Coupon, subtotal: number, now: Date = new 
  */
 export function buildOrder(
   cart: CartLine[],
-  catalog: { products: Pick<ShopProduct, "id" | "name" | "price" | "promoPrice" | "promoUntil" | "stock" | "deliveryDays">[]; settings: StoreSettings },
+  catalog: {
+    products: Pick<
+      ShopProduct,
+      "id" | "name" | "price" | "promoPrice" | "promoUntil" | "stock" | "deliveryDays"
+    >[];
+    settings: StoreSettings;
+  },
   coupon: Coupon | null = null,
   now: Date = new Date(),
   shippingChoice: ShippingChoice | null = null,
@@ -108,7 +123,8 @@ export function buildOrder(
   if (coupon) {
     const problem = couponProblem(coupon, subtotal, now);
     if (problem) throw new CheckoutError("cupom_invalido", problem);
-    if (coupon.kind === "percent") discount = round2((subtotal * Math.min(coupon.value, 100)) / 100);
+    if (coupon.kind === "percent")
+      discount = round2((subtotal * Math.min(coupon.value, 100)) / 100);
     else if (coupon.kind === "fixed") discount = round2(Math.min(coupon.value, subtotal));
     else freeShippingByCoupon = true;
   }
@@ -143,6 +159,17 @@ export const ORDER_STATUS_FROM_MP: Record<string, string> = {
   refunded: "reembolsado",
   charged_back: "reembolsado",
 };
+
+/**
+ * Decides the order status after a Mercado Pago notification. A paid order is final:
+ * it can only become "reembolsado", so a later rejected or cancelled attempt
+ * (the customer tried to pay twice) never overwrites an approved payment.
+ */
+export function resolveOrderStatus(current: string, incoming: string): string {
+  if (current === "pago") return incoming === "reembolsado" ? "reembolsado" : "pago";
+  if (current === "reembolsado") return "reembolsado";
+  return incoming;
+}
 
 export const SUBSCRIPTION_STATUS_FROM_MP: Record<string, string> = {
   authorized: "ativa",
