@@ -142,12 +142,16 @@ export type Database = {
           items: Json
           mp_payment_id: string | null
           mp_preference_id: string | null
+          paid_at: string | null
           shipped_at: string | null
           shipping: Json | null
           shipping_fee: number
           shipping_service: string | null
           status: string
           stock_applied: boolean
+          stock_deductions: Json | null
+          stock_restored: boolean
+          stock_shortage: boolean
           subtotal: number | null
           total: number
           tracking_code: string | null
@@ -167,12 +171,16 @@ export type Database = {
           items: Json
           mp_payment_id?: string | null
           mp_preference_id?: string | null
+          paid_at?: string | null
           shipped_at?: string | null
           shipping?: Json | null
           shipping_fee?: number
           shipping_service?: string | null
           status?: string
           stock_applied?: boolean
+          stock_deductions?: Json | null
+          stock_restored?: boolean
+          stock_shortage?: boolean
           subtotal?: number | null
           total: number
           tracking_code?: string | null
@@ -192,12 +200,16 @@ export type Database = {
           items?: Json
           mp_payment_id?: string | null
           mp_preference_id?: string | null
+          paid_at?: string | null
           shipped_at?: string | null
           shipping?: Json | null
           shipping_fee?: number
           shipping_service?: string | null
           status?: string
           stock_applied?: boolean
+          stock_deductions?: Json | null
+          stock_restored?: boolean
+          stock_shortage?: boolean
           subtotal?: number | null
           total?: number
           tracking_code?: string | null
@@ -446,6 +458,44 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          mp_payment_id: string
+          paid_at: string | null
+          status: string
+          subscription_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          mp_payment_id: string
+          paid_at?: string | null
+          status: string
+          subscription_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          mp_payment_id?: string
+          paid_at?: string | null
+          status?: string
+          subscription_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_payments_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           amount: number
@@ -512,6 +562,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      restore_refunded_order: {
+        Args: { _order_id: string }
+        Returns: undefined
       }
     }
     Enums: {

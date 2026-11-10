@@ -6,7 +6,10 @@ const bodySchema = z
     type: z.string().max(60).optional(),
     topic: z.string().max(60).optional(),
     action: z.string().max(60).optional(),
-    data: z.object({ id: z.union([z.string(), z.number()]) }).partial().optional(),
+    data: z
+      .object({ id: z.union([z.string(), z.number()]) })
+      .partial()
+      .optional(),
   })
   .passthrough();
 
@@ -28,14 +31,27 @@ export const Route = createFileRoute("/api/public/mercadopago/webhook")({
           body = {};
         }
 
-        const type = body.type ?? body.topic ?? url.searchParams.get("type") ?? url.searchParams.get("topic") ?? "";
-        const rawId = body.data?.id ?? url.searchParams.get("data.id") ?? url.searchParams.get("id") ?? "";
+        const type =
+          body.type ??
+          body.topic ??
+          url.searchParams.get("type") ??
+          url.searchParams.get("topic") ??
+          "";
+        const rawId =
+          body.data?.id ?? url.searchParams.get("data.id") ?? url.searchParams.get("id") ?? "";
         const dataId = String(rawId);
         if (!/^[A-Za-z0-9_-]{1,64}$/.test(dataId)) return new Response("ignored", { status: 200 });
 
         const mp = await import("@/lib/mercadopago.server");
 
         const secret = await creds.getMpWebhookSecret();
+        // In production the signature is mandatory: without the secret anyone could
+        // trigger calls to the Mercado Pago API. Payments are still confirmed by the
+        // "Conferir pagamentos" button and by the sync that runs when the patient returns.
+        if (!secret && process.env["NODE_ENV"] === "production") {
+          console.error("Mercado Pago webhook secret is not configured");
+          return new Response("webhook secret not configured", { status: 503 });
+        }
         if (secret) {
           const ok = await mp.verifyMpSignature(
             secret,

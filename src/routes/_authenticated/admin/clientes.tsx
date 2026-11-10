@@ -36,6 +36,8 @@ function Clientes() {
   const [q, setQ] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
   const planName = (id: string) => plans.find((p) => p.id === id)?.name ?? id;
+  const quizPlan = (id: string) =>
+    id === "nenhum" ? "sem plano (avaliação profissional)" : planName(id);
 
   const list = useMemo(() => {
     const term = q.trim().toLowerCase();
@@ -54,7 +56,12 @@ function Clientes() {
     >
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nome, e-mail, telefone, cidade" className="h-10 rounded-full bg-card pl-9" />
+        <Input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Nome, e-mail, telefone, cidade"
+          className="h-10 rounded-full bg-card pl-9"
+        />
       </div>
 
       <div className="mt-6 overflow-hidden rounded-3xl border border-border bg-card">
@@ -78,12 +85,14 @@ function Clientes() {
                     <div>
                       <p className="font-medium">{p.full_name ?? "Sem nome"}</p>
                       <p className="text-muted-foreground">
-                        {[p.email, p.phone, p.city && `${p.city}/${p.state}`].filter(Boolean).join(" · ")}
+                        {[p.email, p.phone, p.city && `${p.city}/${p.state}`]
+                          .filter(Boolean)
+                          .join(" · ")}
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       {sub && <Pill tone="good">Plano {planName(sub.plan_id)}</Pill>}
-                      {quiz && <Pill>Indicação {planName(quiz.plan)}</Pill>}
+                      {quiz && <Pill>Indicação {quizPlan(quiz.plan)}</Pill>}
                       {quiz?.needs_dermatologist && <Pill tone="warn">Dermatologista</Pill>}
                       {paid > 0 && <Pill>{paid} pedidos</Pill>}
                     </div>
@@ -104,7 +113,13 @@ function Clientes() {
   );
 }
 
-function CustomerDetail({ profile, planName }: { profile: ProfileRow; planName: (id: string) => string }) {
+function CustomerDetail({
+  profile,
+  planName,
+}: {
+  profile: ProfileRow;
+  planName: (id: string) => string;
+}) {
   const { data: customers } = useSuspenseQuery(adminCustomersQuery);
   const { data: orders } = useSuspenseQuery(adminOrdersQuery);
   const { data: subs } = useSuspenseQuery(adminSubscriptionsQuery);
@@ -146,7 +161,8 @@ function CustomerDetail({ profile, planName }: { profile: ProfileRow; planName: 
             {mySubs.map((s) => (
               <li key={s.id} className="flex justify-between gap-2">
                 <span>
-                  {planName(s.plan_id)} · {formatPrice(Number(s.amount))}/mês · {dateBR(s.created_at)}
+                  {planName(s.plan_id)} · {formatPrice(Number(s.amount))}/mês ·{" "}
+                  {dateBR(s.created_at)}
                 </span>
                 <Pill tone={paymentTone(s.status)}>{STATUS_LABEL[s.status] ?? s.status}</Pill>
               </li>
@@ -183,7 +199,8 @@ function CustomerDetail({ profile, planName }: { profile: ProfileRow; planName: 
             return (
               <div key={r.id} className="mt-3 rounded-2xl border border-border p-4">
                 <p className="flex flex-wrap items-center gap-2 font-medium">
-                  {dateBR(r.created_at)} · indicação {planName(r.plan)}
+                  {dateBR(r.created_at)} · indicação{" "}
+                  {r.plan === "nenhum" ? "sem plano (avaliação profissional)" : planName(r.plan)}
                   {r.needs_dermatologist && (
                     <Pill tone="warn">
                       <AlertTriangle className="mr-1 size-3" /> Dermatologista
@@ -195,7 +212,8 @@ function CustomerDetail({ profile, planName }: { profile: ProfileRow; planName: 
                     <div key={question.id}>
                       <dt className="text-xs">{question.title}</dt>
                       <dd className="text-foreground">
-                        {question.options.find((o) => o.value === answers[question.id])?.label ?? "—"}
+                        {question.options.find((o) => o.value === answers[question.id])?.label ??
+                          "—"}
                       </dd>
                     </div>
                   ))}

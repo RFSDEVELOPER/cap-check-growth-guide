@@ -8,11 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useCart } from "@/lib/cart";
 import { effectivePrice, formatPrice, hasActivePromo } from "@/lib/catalog";
 import { buildOrder, CheckoutError, type OrderDraft } from "@/lib/checkout";
-import { quoteCart, quoteShippingByCep, startCartCheckout, type CheckoutFailure } from "@/lib/payments.functions";
+import {
+  quoteCart,
+  quoteShippingByCep,
+  startCartCheckout,
+  type CheckoutFailure,
+} from "@/lib/payments.functions";
 import { storefrontQuery, useStorefront } from "@/lib/storefront";
 
 export const Route = createFileRoute("/carrinho")({
@@ -22,7 +28,10 @@ export const Route = createFileRoute("/carrinho")({
       { title: "Carrinho — Loja Cia Cap" },
       { name: "description", content: "Revise seus produtos Cia Cap e pague com Mercado Pago." },
       { property: "og:title", content: "Carrinho — Loja Cia Cap" },
-      { property: "og:description", content: "Finalize sua compra com Mercado Pago: Pix, cartão ou boleto." },
+      {
+        property: "og:description",
+        content: "Finalize sua compra com Mercado Pago: Pix, cartão ou boleto.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -62,11 +71,38 @@ function Carrinho() {
   const shipQuote = useServerFn(quoteShippingByCep);
   const [cep, setCep] = useState("");
   const [shipBusy, setShipBusy] = useState(false);
-  const [shipOptions, setShipOptions] = useState<{ id: string; name: string; price: number; days: number }[] | null>(null);
+  const [shipOptions, setShipOptions] = useState<
+    { id: string; name: string; price: number; days: number }[] | null
+  >(null);
   const [shipMode, setShipMode] = useState<"fixo" | "cotacao" | null>(null);
   const [shipId, setShipId] = useState<string | null>(null);
   const picked = shipOptions?.find((o) => o.id === shipId) ?? null;
   const shipParams = picked ? { cep, shippingService: picked.id } : {};
+
+  // The server prices freight with the CEP saved in the account. If it differs from the
+  // CEP quoted here, the price (or the chosen option) could change at payment time.
+  const [profileCep, setProfileCep] = useState<string | null>(null);
+  useEffect(() => {
+    if (!user) return;
+    let alive = true;
+    supabase
+      .from("profiles")
+      .select("cep")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (alive) setProfileCep((data?.cep ?? "").replace(/\D/g, ""));
+      });
+    return () => {
+      alive = false;
+    };
+  }, [user]);
+  const cepMismatch =
+    shipMode === "cotacao" &&
+    !!picked &&
+    profileCep !== null &&
+    profileCep.length === 8 &&
+    profileCep !== cep.replace(/\D/g, "");
 
   async function calcShipping(e: FormEvent) {
     e.preventDefault();
@@ -74,7 +110,11 @@ function Carrinho() {
     try {
       const res = await shipQuote({ data: { cep, items: cart.lines } });
       if ("error" in res) {
-        toast.error(res.error === "cep_invalido" ? "Digite um CEP com 8 números." : "Não foi possível calcular o frete agora.");
+        toast.error(
+          res.error === "cep_invalido"
+            ? "Digite um CEP com 8 números."
+            : "Não foi possível calcular o frete agora.",
+        );
       } else if (res.mode === "fixo") {
         setShipMode("fixo");
         setShipOptions(null);
@@ -178,7 +218,9 @@ function Carrinho() {
   const problem = local && "error" in local ? local.error : null;
   const { freeShippingMin } = store.settings;
   const missingForFree =
-    order && freeShippingMin != null && order.shipping > 0 ? freeShippingMin - (order.subtotal - order.discount) : 0;
+    order && freeShippingMin != null && order.shipping > 0
+      ? freeShippingMin - (order.subtotal - order.discount)
+      : 0;
 
   return (
     <div className="min-h-screen">
@@ -203,8 +245,15 @@ function Carrinho() {
                 const unit = effectivePrice(p);
                 const overStock = line.qty > p.stock;
                 return (
-                  <li key={line.id} className="flex gap-4 rounded-3xl border border-border bg-card p-4">
-                    <img src={p.image} alt={p.name} className="size-24 shrink-0 rounded-2xl bg-sage object-cover" />
+                  <li
+                    key={line.id}
+                    className="flex gap-4 rounded-3xl border border-border bg-card p-4"
+                  >
+                    <img
+                      src={p.image}
+                      alt={p.name}
+                      className="size-24 shrink-0 rounded-2xl bg-sage object-cover"
+                    />
                     <div className="flex flex-1 flex-col">
                       <div className="flex justify-between gap-3">
                         <h2 className="text-lg leading-tight">{p.name}</h2>
@@ -258,13 +307,18 @@ function Carrinho() {
             <aside className="h-fit rounded-3xl bg-secondary/70 p-6 lg:sticky lg:top-24">
               <h2 className="text-2xl">Resumo</h2>
 
-              {user && (
-                coupon ? (
+              {user &&
+                (coupon ? (
                   <div className="mt-5 flex items-center justify-between rounded-xl border border-primary/25 bg-card px-3 py-2 text-sm">
                     <span className="flex items-center gap-2">
-                      <Tag className="size-4 text-copper" /> Cupom <strong className="font-mono">{coupon.code}</strong>
+                      <Tag className="size-4 text-copper" /> Cupom{" "}
+                      <strong className="font-mono">{coupon.code}</strong>
                     </span>
-                    <button type="button" aria-label="Remover cupom" onClick={() => setCoupon(null)}>
+                    <button
+                      type="button"
+                      aria-label="Remover cupom"
+                      onClick={() => setCoupon(null)}
+                    >
                       <X className="size-4 text-muted-foreground" />
                     </button>
                   </div>
@@ -278,12 +332,15 @@ function Carrinho() {
                       maxLength={30}
                       className="h-10 rounded-xl bg-card font-mono uppercase"
                     />
-                    <Button type="submit" variant="pill-outline" disabled={couponBusy || !couponInput.trim()}>
+                    <Button
+                      type="submit"
+                      variant="pill-outline"
+                      disabled={couponBusy || !couponInput.trim()}
+                    >
                       {couponBusy ? <Loader2 className="animate-spin" /> : "Aplicar"}
                     </Button>
                   </form>
-                )
-              )}
+                ))}
 
               <form onSubmit={calcShipping} className="mt-5 flex gap-2">
                 <Input
@@ -300,7 +357,11 @@ function Carrinho() {
                   maxLength={9}
                   className="h-10 rounded-xl bg-card font-mono"
                 />
-                <Button type="submit" variant="pill-outline" disabled={shipBusy || cep.replace(/\D/g, "").length !== 8}>
+                <Button
+                  type="submit"
+                  variant="pill-outline"
+                  disabled={shipBusy || cep.replace(/\D/g, "").length !== 8}
+                >
                   {shipBusy ? <Loader2 className="animate-spin" /> : "Calcular"}
                 </Button>
               </form>
@@ -312,16 +373,37 @@ function Carrinho() {
                       className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-border bg-card px-3 py-2 text-sm has-[:checked]:border-primary"
                     >
                       <span className="flex items-center gap-2">
-                        <input type="radio" name="frete" checked={shipId === o.id} onChange={() => setShipId(o.id)} className="accent-primary" />
+                        <input
+                          type="radio"
+                          name="frete"
+                          checked={shipId === o.id}
+                          onChange={() => setShipId(o.id)}
+                          className="accent-primary"
+                        />
                         <span>
                           {o.name}
-                          <span className="block text-xs text-muted-foreground">até {o.days} dias úteis</span>
+                          <span className="block text-xs text-muted-foreground">
+                            até {o.days} dias úteis
+                          </span>
                         </span>
                       </span>
                       <strong>{formatPrice(o.price)}</strong>
                     </label>
                   ))}
-                  <p className="text-xs text-muted-foreground">O valor final usa o CEP do endereço de entrega da sua conta.</p>
+                  {cepMismatch ? (
+                    <p className="text-xs text-destructive" role="alert">
+                      Este CEP é diferente do endereço da sua conta. Calcule o frete com o CEP{" "}
+                      {profileCep?.replace(/(\d{5})(\d{3})/, "$1-$2")} ou{" "}
+                      <Link to="/conta" className="underline">
+                        atualize seu endereço
+                      </Link>
+                      .
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      O valor final usa o CEP do endereço de entrega da sua conta.
+                    </p>
+                  )}
                 </fieldset>
               )}
               {shipMode === "fixo" && (
@@ -352,7 +434,8 @@ function Carrinho() {
               )}
               {order && (
                 <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                  <Truck className="size-4" /> Entrega em até {order.deliveryDays} dias após o pagamento
+                  <Truck className="size-4" /> Entrega em até {order.deliveryDays} dias após o
+                  pagamento
                 </p>
               )}
               {missingForFree > 0 && (
@@ -373,7 +456,7 @@ function Carrinho() {
                   variant="pill"
                   size="xl"
                   className="mt-6 w-full"
-                  disabled={busy || !ready || !!problem}
+                  disabled={busy || !ready || !!problem || cepMismatch}
                   onClick={pay}
                 >
                   {busy ? <Loader2 className="animate-spin" /> : <Lock />} Pagar com Mercado Pago

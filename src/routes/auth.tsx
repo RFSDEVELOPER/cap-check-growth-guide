@@ -47,11 +47,29 @@ const signInSchema = z.object({
 
 function GoogleLogo() {
   return (
-    <svg aria-hidden="true" width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-      <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z" />
-      <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z" />
-      <path fill="#FBBC05" d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z" />
-      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z" />
+    <svg
+      aria-hidden="true"
+      width="18"
+      height="18"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+    >
+      <path
+        fill="#4285F4"
+        d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"
+      />
     </svg>
   );
 }
@@ -144,7 +162,10 @@ function AuthPage() {
     <div className="flex min-h-screen flex-col">
       <header className="container-site flex h-16 items-center justify-between">
         <Logo />
-        <Link to="/" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          to="/"
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className="size-4" /> Voltar
         </Link>
       </header>
@@ -157,9 +178,18 @@ function AuthPage() {
               <h1 className="mt-4 text-3xl">Confira seu e-mail</h1>
               <p className="mt-3 text-muted-foreground">
                 Enviamos um link para <strong className="text-foreground">{sentTo}</strong>.{" "}
-                {mode === "esqueci" ? "Abra para criar uma nova senha." : "Abra para confirmar sua conta e entrar."}
+                {mode === "esqueci"
+                  ? "Abra para criar uma nova senha."
+                  : "Abra para confirmar sua conta e entrar."}
               </p>
-              <Button variant="ghost" className="mt-6" onClick={() => { setSentTo(null); setMode("entrar"); }}>
+              <Button
+                variant="ghost"
+                className="mt-6"
+                onClick={() => {
+                  setSentTo(null);
+                  setMode("entrar");
+                }}
+              >
                 Voltar para entrar
               </Button>
             </div>
@@ -167,7 +197,11 @@ function AuthPage() {
             <>
               <span className="eyebrow text-copper">Área do paciente</span>
               <h1 className="mt-2 text-3xl md:text-4xl">
-                {mode === "criar" ? "Crie sua conta" : mode === "esqueci" ? "Recuperar senha" : "Entrar"}
+                {mode === "criar"
+                  ? "Crie sua conta"
+                  : mode === "esqueci"
+                    ? "Recuperar senha"
+                    : "Entrar"}
               </h1>
 
               {mode !== "esqueci" && (
@@ -179,10 +213,15 @@ function AuthPage() {
                         variant="ghost"
                         type="button"
                         aria-pressed={mode === m}
-                        onClick={() => { setMode(m); setErrors({}); }}
+                        onClick={() => {
+                          setMode(m);
+                          setErrors({});
+                        }}
                         className={cn(
                           "flex-1 rounded-full py-2 transition-colors",
-                          mode === m ? "bg-background text-foreground shadow-soft" : "text-muted-foreground",
+                          mode === m
+                            ? "bg-background text-foreground shadow-soft"
+                            : "text-muted-foreground",
                         )}
                       >
                         {m === "entrar" ? "Já sou cliente" : "Novo usuário"}
@@ -191,31 +230,55 @@ function AuthPage() {
                   </div>
 
                   <div className="mt-6 grid gap-3">
-                     <Button
+                    <Button
                       type="button"
-                       variant="ghost"
-                       disabled={busy}
+                      variant="ghost"
+                      disabled={busy}
                       onClick={() => social("google")}
                       className="google-btn flex h-11 w-full items-center justify-center gap-[10px] rounded-full px-3 text-sm font-medium"
                     >
                       <GoogleLogo /> Continuar com Google
-                     </Button>
-                     <Button type="button" variant="apple" disabled={busy} className="h-11 w-full rounded-full px-6 text-[19px]" onClick={() => social("apple")}>
-                       Continue with Apple
-                     </Button>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="apple"
+                      disabled={busy}
+                      className="h-11 w-full rounded-full px-6 text-[19px]"
+                      onClick={() => social("apple")}
+                    >
+                      Continuar com Apple
+                    </Button>
                   </div>
 
                   <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="h-px flex-1 bg-border" /> ou com e-mail <span className="h-px flex-1 bg-border" />
+                    <span className="h-px flex-1 bg-border" /> ou com e-mail{" "}
+                    <span className="h-px flex-1 bg-border" />
                   </div>
                 </>
               )}
 
               {mode === "entrar" && (
                 <form onSubmit={onSignIn} className="grid gap-4" noValidate>
-                  <Field id="email" label="E-mail" type="email" autoComplete="email" error={errors["email"]} />
-                  <Field id="password" label="Senha" type="password" autoComplete="current-password" error={errors["password"]} />
-                  <Button variant="link" type="button" onClick={() => setMode("esqueci")} className="-mt-2 h-auto justify-self-end p-0 text-sm">
+                  <Field
+                    id="email"
+                    label="E-mail"
+                    type="email"
+                    autoComplete="email"
+                    error={errors["email"]}
+                  />
+                  <Field
+                    id="password"
+                    label="Senha"
+                    type="password"
+                    autoComplete="current-password"
+                    error={errors["password"]}
+                  />
+                  <Button
+                    variant="link"
+                    type="button"
+                    onClick={() => setMode("esqueci")}
+                    className="-mt-2 h-auto justify-self-end p-0 text-sm"
+                  >
                     Esqueci a senha
                   </Button>
                   <Button type="submit" variant="pill" size="xl" disabled={busy}>
@@ -226,10 +289,34 @@ function AuthPage() {
 
               {mode === "criar" && (
                 <form onSubmit={onSignUp} className="grid gap-4" noValidate>
-                  <Field id="name" label="Nome completo" autoComplete="name" error={errors["name"]} />
-                  <Field id="email" label="E-mail" type="email" autoComplete="email" error={errors["email"]} />
-                  <Field id="phone" label="Telefone (WhatsApp)" type="tel" autoComplete="tel" placeholder="(11) 99999-9999" error={errors["phone"]} />
-                  <Field id="password" label="Senha" type="password" autoComplete="new-password" error={errors["password"]} />
+                  <Field
+                    id="name"
+                    label="Nome completo"
+                    autoComplete="name"
+                    error={errors["name"]}
+                  />
+                  <Field
+                    id="email"
+                    label="E-mail"
+                    type="email"
+                    autoComplete="email"
+                    error={errors["email"]}
+                  />
+                  <Field
+                    id="phone"
+                    label="Telefone (WhatsApp)"
+                    type="tel"
+                    autoComplete="tel"
+                    placeholder="(11) 99999-9999"
+                    error={errors["phone"]}
+                  />
+                  <Field
+                    id="password"
+                    label="Senha"
+                    type="password"
+                    autoComplete="new-password"
+                    error={errors["password"]}
+                  />
                   <Button type="submit" variant="pill" size="xl" disabled={busy}>
                     {busy && <Loader2 className="animate-spin" />} Criar conta
                   </Button>
@@ -241,7 +328,13 @@ function AuthPage() {
 
               {mode === "esqueci" && (
                 <form onSubmit={onForgot} className="mt-6 grid gap-4" noValidate>
-                  <Field id="email" label="E-mail da conta" type="email" autoComplete="email" error={errors["email"]} />
+                  <Field
+                    id="email"
+                    label="E-mail da conta"
+                    type="email"
+                    autoComplete="email"
+                    error={errors["email"]}
+                  />
                   <Button type="submit" variant="pill" size="xl" disabled={busy}>
                     {busy && <Loader2 className="animate-spin" />} Enviar link
                   </Button>
@@ -263,7 +356,11 @@ function Field({
   label,
   error,
   ...props
-}: { id: string; label: string; error?: string | undefined } & React.InputHTMLAttributes<HTMLInputElement>) {
+}: {
+  id: string;
+  label: string;
+  error?: string | undefined;
+} & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className="grid gap-1.5">
       <Label htmlFor={id}>{label}</Label>

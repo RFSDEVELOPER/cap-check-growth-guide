@@ -39,9 +39,22 @@ describe("recommendPlan", () => {
     expect(r.plan).toBe("avancado");
   });
 
-  it("sends sudden patchy loss to the dermatologist plan", () => {
+  it("sends sudden patchy loss to a professional without suggesting any plan", () => {
     const r = recommendPlan({ tempo: "menos-1", area: "entradas", sinais: "falhas" });
-    expect(r.plan).toBe("avancado");
+    expect(r.plan).toBe("nenhum");
+    expect(r.needsDermatologist).toBe(true);
+  });
+
+  it("does the same for very fast loss, whatever the score", () => {
+    const r = recommendPlan({
+      tempo: "mais-5",
+      area: "extensa",
+      familia: "sim",
+      historico: "sem-resultado",
+      objetivo: "densidade",
+      sinais: "subita",
+    });
+    expect(r.plan).toBe("nenhum");
     expect(r.needsDermatologist).toBe(true);
   });
 });

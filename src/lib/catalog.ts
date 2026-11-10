@@ -90,7 +90,7 @@ export function effectivePrice(
   p: Pick<ShopProduct, "price" | "promoPrice" | "promoUntil">,
   now: Date = new Date(),
 ): number {
-  return hasActivePromo(p, now) ? p.promoPrice! : p.price;
+  return hasActivePromo(p, now) && p.promoPrice !== null ? p.promoPrice : p.price;
 }
 
 const FALLBACK_IMAGES: Record<string, string> = {
@@ -173,7 +173,11 @@ export const QUIZ: QuizQuestion[] = [
       { value: "nunca", label: "Ainda não tenho uma rotina", points: 0 },
       { value: "caseiro", label: "Shampoos e suplementos", points: 0 },
       { value: "minoxidil", label: "Já usei produtos para o couro cabeludo", points: 1 },
-      { value: "sem-resultado", label: "Já experimentei cuidados e quero outras opções", points: 2 },
+      {
+        value: "sem-resultado",
+        label: "Já experimentei cuidados e quero outras opções",
+        points: 2,
+      },
     ],
   },
   {
@@ -198,8 +202,11 @@ export const QUIZ: QuizQuestion[] = [
   },
 ];
 
+/** "nenhum" means the answers show a warning sign, so no plan is suggested. */
+export type QuizPlan = PlanId | "nenhum";
+
 export interface QuizResult {
-  plan: PlanId;
+  plan: QuizPlan;
   score: number;
   /** True when the answers suggest the case needs a dermatologist first. */
   needsDermatologist: boolean;
@@ -220,8 +227,9 @@ export function recommendPlan(answers: QuizAnswers): QuizResult {
   const needsDermatologist = RED_FLAGS.has(answers.sinais ?? "");
 
   if (needsDermatologist) {
+    // Warning signs: never push a paid plan, only point to a health professional.
     return {
-      plan: "avancado",
+      plan: "nenhum",
       score,
       needsDermatologist,
       summary:
@@ -233,7 +241,8 @@ export function recommendPlan(answers: QuizAnswers): QuizResult {
       plan: "essencial",
       score,
       needsDermatologist,
-      summary: "Pelas suas respostas, uma rotina simples de cuidados pode combinar com suas preferências. Confira a composição e o modo de uso dos produtos.",
+      summary:
+        "Pelas suas respostas, uma rotina simples de cuidados pode combinar com suas preferências. Confira a composição e o modo de uso dos produtos.",
     };
   }
   if (score <= 6) {
