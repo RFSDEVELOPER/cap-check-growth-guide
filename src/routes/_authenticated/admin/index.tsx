@@ -24,6 +24,14 @@ export const Route = createFileRoute("/_authenticated/admin/")({
       context.queryClient.ensureQueryData(adminSubscriptionsQuery),
       context.queryClient.ensureQueryData(adminSettingsQuery),
     ]),
+  head: () => ({ meta: [
+    { title: "Visão geral — Admin Cia Cap" },
+    { name: "description", content: "Visão geral na administração da Cia Cap." },
+    { property: "og:title", content: "Visão geral — Admin Cia Cap" },
+    { property: "og:description", content: "Visão geral na administração da Cia Cap." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: Overview,
 });
 

@@ -24,6 +24,14 @@ import {
 
 export const Route = createFileRoute("/_authenticated/admin/afiliados")({
   loader: ({ context }) => context.queryClient.ensureQueryData(adminAffiliatesQuery),
+  head: () => ({ meta: [
+    { title: "Links de afiliado — Admin Cia Cap" },
+    { name: "description", content: "Links de afiliado na administração da Cia Cap." },
+    { property: "og:title", content: "Links de afiliado — Admin Cia Cap" },
+    { property: "og:description", content: "Links de afiliado na administração da Cia Cap." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: Afiliados,
 });
 

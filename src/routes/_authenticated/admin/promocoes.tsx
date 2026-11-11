@@ -21,6 +21,14 @@ export const Route = createFileRoute("/_authenticated/admin/promocoes")({
       context.queryClient.ensureQueryData(adminCouponsQuery),
       context.queryClient.ensureQueryData(adminProductsQuery),
     ]),
+  head: () => ({ meta: [
+    { title: "Promoções e cupons — Admin Cia Cap" },
+    { name: "description", content: "Promoções e cupons na administração da Cia Cap." },
+    { property: "og:title", content: "Promoções e cupons — Admin Cia Cap" },
+    { property: "og:description", content: "Promoções e cupons na administração da Cia Cap." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: Promocoes,
 });
 
