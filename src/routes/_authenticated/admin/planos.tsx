@@ -18,6 +18,14 @@ export const Route = createFileRoute("/_authenticated/admin/planos")({
       context.queryClient.ensureQueryData(adminPlansQuery),
       context.queryClient.ensureQueryData(adminSubscriptionsQuery),
     ]),
+  head: () => ({ meta: [
+    { title: "Planos — Admin Cia Cap" },
+    { name: "description", content: "Planos na administração da Cia Cap." },
+    { property: "og:title", content: "Planos — Admin Cia Cap" },
+    { property: "og:description", content: "Planos na administração da Cia Cap." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: Planos,
 });
 

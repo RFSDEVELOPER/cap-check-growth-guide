@@ -29,6 +29,14 @@ export const Route = createFileRoute("/_authenticated/admin/produtos")({
       context.queryClient.ensureQueryData(adminProductsQuery),
       context.queryClient.ensureQueryData(adminSettingsQuery),
     ]),
+  head: () => ({ meta: [
+    { title: "Produtos e estoque — Admin Cia Cap" },
+    { name: "description", content: "Produtos e estoque na administração da Cia Cap." },
+    { property: "og:title", content: "Produtos e estoque — Admin Cia Cap" },
+    { property: "og:description", content: "Produtos e estoque na administração da Cia Cap." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: Produtos,
 });
 

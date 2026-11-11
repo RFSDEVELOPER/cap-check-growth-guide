@@ -20,6 +20,14 @@ const orderQuery = (id: string) =>
 
 export const Route = createFileRoute("/_authenticated/admin/recibo/$id")({
   loader: ({ context, params }) => context.queryClient.ensureQueryData(orderQuery(params.id)),
+  head: () => ({ meta: [
+    { title: "Recibo de compra — Admin Cia Cap" },
+    { name: "description", content: "Recibo de compra na administração da Cia Cap." },
+    { property: "og:title", content: "Recibo de compra — Admin Cia Cap" },
+    { property: "og:description", content: "Recibo de compra na administração da Cia Cap." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: Recibo,
 });
 

@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Aplicar correções do arquivo etapa3, preservando contas/configurações, e verificar questionário, carrinho e segurança dos pagamentos
+- [x] Aplicar correções do arquivo etapa3, preservando contas/configurações, e verificar questionário, carrinho e segurança dos pagamentos
 
 - [x] Adaptar início, questionário, rodapé e FAQ para produtos capilares sem prescrição, sem promessas de telemedicina ou receitas
 
@@ -21,3 +21,6 @@
 - [ ] E-mails automáticos nas mudanças de status do pedido, com rastreio e previsão de entrega — aguardando configuração do domínio de envio
 - [ ] Links de afiliado reais (Mercado Livre e TikTok Shop) — Raul cola pelo painel em Links de afiliado
 - [ ] Confirmar produtos próprios, preços, estoque e frete — Raul ajusta pelo painel
+
+- [ ] Verificar cobrança/Pix com comprador de teste e configurar assinatura secreta do webhook no painel — depende das configurações do Mercado Pago
+- [ ] Histórico de cobranças mensais das assinaturas — arquivo etapa3 inclui tabela, mas não inclui ligação dos avisos de cobrança

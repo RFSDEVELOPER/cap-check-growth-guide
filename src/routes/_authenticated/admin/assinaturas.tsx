@@ -21,6 +21,14 @@ export const Route = createFileRoute("/_authenticated/admin/assinaturas")({
       context.queryClient.ensureQueryData(adminCustomersQuery),
       context.queryClient.ensureQueryData(adminPlansQuery),
     ]),
+  head: () => ({ meta: [
+    { title: "Assinaturas — Admin Cia Cap" },
+    { name: "description", content: "Assinaturas na administração da Cia Cap." },
+    { property: "og:title", content: "Assinaturas — Admin Cia Cap" },
+    { property: "og:description", content: "Assinaturas na administração da Cia Cap." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: Assinaturas,
 });
 

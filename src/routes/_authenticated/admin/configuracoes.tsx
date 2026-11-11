@@ -36,6 +36,14 @@ export const Route = createFileRoute("/_authenticated/admin/configuracoes")({
       context.queryClient.ensureQueryData(paymentSettingsQuery),
       context.queryClient.ensureQueryData(hintsQuery),
     ]),
+  head: () => ({ meta: [
+    { title: "Configurações de pagamentos e frete — Admin Cia Cap" },
+    { name: "description", content: "Configurações de pagamentos e frete na administração da Cia Cap." },
+    { property: "og:title", content: "Configurações de pagamentos e frete — Admin Cia Cap" },
+    { property: "og:description", content: "Configurações de pagamentos e frete na administração da Cia Cap." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: Configuracoes,
 });
 

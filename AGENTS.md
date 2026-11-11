@@ -42,3 +42,7 @@ use the editor.
 - Home and questionnaire use PlanCard's productCopy presentation to avoid rendering legacy medical plan descriptions; this does not change database-managed billing or plan contents.
 - Gateway and shipping credentials are saved from `/admin/configuracoes` into `integration_secrets` (AES-GCM with `SETTINGS_ENCRYPTION_KEY`, service-role only) via `src/lib/credentials.server.ts`; the browser only gets the last 4 characters, so secret values never leave the server.
 - Shipping by CEP quotes Correios and Jadlog through Melhor Envio (`src/lib/shipping.server.ts`); checkout re-quotes with the profile CEP so the browser never sets the freight price, and falls back to the fixed fee when no token is set.
+
+- Imported archives are merged by semantic changes only; retain target dependencies and generated integrations to preserve the managed runtime and existing accounts.
+- Refund stock restoration uses recorded actual deductions and is idempotent; legacy orders without deductions require manual reconciliation to avoid inventing stock.
+- Payment retries use stored server-priced orders for at most 24 hours and verify payment and stock first; subscription replacement cancels pending provider agreements before creating another to avoid duplicate charges.

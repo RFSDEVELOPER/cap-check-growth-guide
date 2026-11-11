@@ -2,16 +2,83 @@
   "source": "cap-check-growth-guide-etapa3.zip",
   "scope": "Merge corrections into the existing application; retain the existing Lovable Cloud database and users",
   "capabilities": [
-    {"capability":"code","source":"uploaded source archive","outcome":"merge semantic changes only; retain target dependencies and generated integrations","status":"in_progress","next_action":"Import reviewed corrections and validate"},
-    {"capability":"schema","source":"sql/etapa3-banco.sql","outcome":"apply additive changes to existing Cloud","status":"pending","next_action":"Apply reviewed stock/refund and questionnaire constraints"},
-    {"capability":"records and auth identities","source":"existing Lovable Cloud","outcome":"retain existing records, users, roles and credentials","status":"retained","next_action":"No external data import needed for this same-project archive"},
-    {"capability":"authorization","source":"existing user_roles and RLS","outcome":"retain generated auth and owner-scoped actions","status":"in_progress","next_action":"Verify authenticated account paths"},
-    {"capability":"uploaded file bytes and storage","source":"existing private product-images bucket and bundled assets","outcome":"retain unchanged assets and storage","status":"retained","next_action":"Verify storefront renders"},
-    {"capability":"payments, webhook and secrets","source":"Mercado Pago REST and encrypted settings","outcome":"retain provider and public endpoint; merge payment safety changes","status":"pending_verification","next_action":"Validate logic locally; real checkout needs configured credentials"},
-    {"capability":"shipping","source":"Melhor Envio for Correios and Jadlog","outcome":"retain provider; merge promotion pricing and CEP checks","status":"pending_verification","next_action":"Verify UI; real quotes require token and origin CEP"},
-    {"capability":"subscription monthly payment history","source":"SQL table only; archive explicitly leaves webhook wiring pending","outcome":"preserve schema without claiming recurring-charge history is implemented","status":"pending","next_action":"Report unwired monthly-payment history"},
-    {"capability":"emails","source":"existing roadmap","outcome":"retain pending email-domain configuration","status":"blocked","next_action":"Owner configures sending domain"},
-    {"capability":"callbacks, schedules and cutover","source":"same-project archive","outcome":"retain existing URLs; no new external OAuth callbacks or schedules detected","status":"retained","next_action":"No provider cutover"},
-    {"capability":"verification","source":"tests and live preview","outcome":"verify imported corrections without charging production customers","status":"in_progress","next_action":"Run safety tests and browser checks"}
-  ]
+    {
+      "capability": "code",
+      "source": "uploaded source archive",
+      "outcome": "merge semantic changes only; retain target dependencies and generated integrations",
+      "status": "verified",
+      "next_action": "27 tests passed; authenticated cart, double-tap protection, warning-result save/readback and cancellation confirmation verified without charging or cancelling"
+    },
+    {
+      "capability": "schema",
+      "source": "sql/etapa3-banco.sql",
+      "outcome": "apply additive changes to existing Cloud",
+      "status": "verified",
+      "next_action": "27 tests passed; authenticated cart, double-tap protection, warning-result save/readback and cancellation confirmation verified without charging or cancelling"
+    },
+    {
+      "capability": "records and auth identities",
+      "source": "existing Lovable Cloud",
+      "outcome": "retain existing records, users, roles and credentials",
+      "status": "retained",
+      "next_action": "No external data import needed for this same-project archive"
+    },
+    {
+      "capability": "authorization",
+      "source": "existing user_roles and RLS",
+      "outcome": "retain generated auth and owner-scoped actions",
+      "status": "verified",
+      "next_action": "27 tests passed; authenticated cart, double-tap protection, warning-result save/readback and cancellation confirmation verified without charging or cancelling"
+    },
+    {
+      "capability": "uploaded file bytes and storage",
+      "source": "existing private product-images bucket and bundled assets",
+      "outcome": "retain unchanged assets and storage",
+      "status": "retained",
+      "next_action": "Verify storefront renders"
+    },
+    {
+      "capability": "payments, webhook and secrets",
+      "source": "Mercado Pago REST and encrypted settings",
+      "outcome": "retain provider and public endpoint; merge payment safety changes",
+      "status": "pending_verification",
+      "next_action": "Live charges and Pix QR remain unverified; webhook signing secret is not saved. Configure it in Admin → Configurações; existing encrypted tokens preserved."
+    },
+    {
+      "capability": "shipping",
+      "source": "Melhor Envio for Correios and Jadlog",
+      "outcome": "retain provider; merge promotion pricing and CEP checks",
+      "status": "pending_verification",
+      "next_action": "Existing token preserved; real carrier quote not exercised in this verification."
+    },
+    {
+      "capability": "subscription monthly payment history",
+      "source": "SQL table only; archive explicitly leaves webhook wiring pending",
+      "outcome": "preserve schema without claiming recurring-charge history is implemented",
+      "status": "pending",
+      "next_action": "Report unwired monthly-payment history"
+    },
+    {
+      "capability": "emails",
+      "source": "existing roadmap",
+      "outcome": "retain pending email-domain configuration",
+      "status": "blocked",
+      "next_action": "Owner configures sending domain"
+    },
+    {
+      "capability": "callbacks, schedules and cutover",
+      "source": "same-project archive",
+      "outcome": "retain existing URLs; no new external OAuth callbacks or schedules detected",
+      "status": "retained",
+      "next_action": "No provider cutover"
+    },
+    {
+      "capability": "verification",
+      "source": "tests and live preview",
+      "outcome": "verify imported corrections without charging production customers",
+      "status": "verified",
+      "next_action": "27 tests passed; authenticated cart, double-tap protection, warning-result save/readback and cancellation confirmation verified without charging or cancelling"
+    }
+  ],
+  "verification_note": "Temporary questionnaire result deleted after readback; original accounts and subscription unchanged. No source credentials or generated files imported."
 }
