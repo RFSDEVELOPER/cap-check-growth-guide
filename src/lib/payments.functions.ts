@@ -582,7 +582,10 @@ export const cancelMySubscription = createServerFn({ method: "POST" })
         return { ok: false, reason: "falha" };
       }
     }
-    const { error } = await supabaseAdmin.from("subscriptions").update({ status: "cancelada" }).eq("id", sub.id);
+    const { error } = await supabaseAdmin
+      .from("subscriptions")
+      .update({ status: "cancelada" })
+      .eq("id", sub.id);
     return error ? { ok: false, reason: "falha" } : { ok: true };
   });
 
