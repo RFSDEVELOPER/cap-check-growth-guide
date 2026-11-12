@@ -28,7 +28,10 @@ export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
       { title: "Administração — Cia Cap" },
-      { name: "description", content: "Painel de gestão da Cia Cap: pedidos, entregas, produtos, planos e promoções." },
+      {
+        name: "description",
+        content: "Painel de gestão da Cia Cap: pedidos, entregas, produtos, planos e promoções.",
+      },
       { name: "robots", content: "noindex" },
       { property: "og:title", content: "Administração — Cia Cap" },
       { property: "og:description", content: "Painel de gestão da Cia Cap." },
@@ -60,7 +63,9 @@ function AdminLayout() {
         <div className="flex h-14 items-center justify-between gap-3 px-4 md:px-6">
           <div className="flex items-center gap-3">
             <Logo />
-            <span className="eyebrow rounded-full bg-forest px-2.5 py-1 text-forest-foreground">Admin</span>
+            <span className="eyebrow rounded-full bg-forest px-2.5 py-1 text-forest-foreground">
+              Admin
+            </span>
           </div>
           <div className="flex items-center gap-1">
             <Button asChild variant="ghost" size="sm">
@@ -80,7 +85,10 @@ function AdminLayout() {
             </Button>
           </div>
         </div>
-        <nav className="flex gap-1 overflow-x-auto border-t border-border/60 px-3 py-2 lg:hidden" aria-label="Administração">
+        <nav
+          className="flex gap-1 overflow-x-auto border-t border-border/60 px-3 py-2 lg:hidden"
+          aria-label="Administração"
+        >
           {NAV.map((item) => (
             <Link
               key={item.to}

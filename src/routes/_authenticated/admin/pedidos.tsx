@@ -37,14 +37,6 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/admin/pedidos")({
   loader: ({ context }) => context.queryClient.ensureQueryData(adminOrdersQuery),
-  head: () => ({ meta: [
-    { title: "Pedidos e entregas — Admin Cia Cap" },
-    { name: "description", content: "Pedidos e entregas na administração da Cia Cap." },
-    { property: "og:title", content: "Pedidos e entregas — Admin Cia Cap" },
-    { property: "og:description", content: "Pedidos e entregas na administração da Cia Cap." },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
   component: Pedidos,
 });
 

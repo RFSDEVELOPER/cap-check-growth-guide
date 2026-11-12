@@ -6,6 +6,9 @@ import suplemento from "@/assets/produto-suplemento.jpg";
 // (database). This file keeps the shared types, labels, price rules and the questionnaire.
 
 export type PlanId = "essencial" | "completo" | "avancado";
+/** Private storage bucket with the product photos (shown through signed links). */
+export const PRODUCT_IMAGES_BUCKET = "product-images";
+
 export const PLAN_IDS: PlanId[] = ["essencial", "completo", "avancado"];
 
 export interface Plan {
@@ -64,7 +67,7 @@ export interface Storefront {
 export const MAX_QTY_PER_ITEM = 10;
 
 export const CATEGORY_LABEL: Record<ProductCategory, string> = {
-  tratamento: "Tratamento",
+  tratamento: "Cuidado intensivo",
   limpeza: "Limpeza",
   suplemento: "Suplementos",
   finalizacao: "Finalização",
@@ -90,7 +93,7 @@ export function effectivePrice(
   p: Pick<ShopProduct, "price" | "promoPrice" | "promoUntil">,
   now: Date = new Date(),
 ): number {
-  return hasActivePromo(p, now) && p.promoPrice !== null ? p.promoPrice : p.price;
+  return hasActivePromo(p, now) ? p.promoPrice! : p.price;
 }
 
 const FALLBACK_IMAGES: Record<string, string> = {

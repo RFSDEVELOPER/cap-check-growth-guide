@@ -20,14 +20,6 @@ const orderQuery = (id: string) =>
 
 export const Route = createFileRoute("/_authenticated/admin/recibo/$id")({
   loader: ({ context, params }) => context.queryClient.ensureQueryData(orderQuery(params.id)),
-  head: () => ({ meta: [
-    { title: "Recibo de compra — Admin Cia Cap" },
-    { name: "description", content: "Recibo de compra na administração da Cia Cap." },
-    { property: "og:title", content: "Recibo de compra — Admin Cia Cap" },
-    { property: "og:description", content: "Recibo de compra na administração da Cia Cap." },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
   component: Recibo,
 });
 
@@ -63,7 +55,8 @@ function Recibo() {
           {s.email && <p>{s.email}</p>}
           <p className="text-muted-foreground">
             {s.street}, {s.number}
-            {s.complement ? ` — ${s.complement}` : ""} · {s.neighborhood} · {s.city}/{s.state} · CEP {s.cep}
+            {s.complement ? ` — ${s.complement}` : ""} · {s.neighborhood} · {s.city}/{s.state} · CEP{" "}
+            {s.cep}
           </p>
         </section>
         <table className="mt-6 w-full text-sm">
@@ -85,19 +78,33 @@ function Recibo() {
           </tbody>
         </table>
         <dl className="ml-auto mt-4 grid max-w-xs gap-1 text-sm">
-          <div className="flex justify-between"><dt>Produtos</dt><dd>{formatPrice(Number(order.subtotal))}</dd></div>
+          <div className="flex justify-between">
+            <dt>Produtos</dt>
+            <dd>{formatPrice(Number(order.subtotal))}</dd>
+          </div>
           {Number(order.discount) > 0 && (
-            <div className="flex justify-between"><dt>Desconto {order.coupon_code && `(${order.coupon_code})`}</dt><dd>− {formatPrice(Number(order.discount))}</dd></div>
+            <div className="flex justify-between">
+              <dt>Desconto {order.coupon_code && `(${order.coupon_code})`}</dt>
+              <dd>− {formatPrice(Number(order.discount))}</dd>
+            </div>
           )}
           <div className="flex justify-between">
             <dt>Frete{order.shipping_service ? ` (${order.shipping_service})` : ""}</dt>
-            <dd>{Number(order.shipping_fee) === 0 ? "Grátis" : formatPrice(Number(order.shipping_fee))}</dd>
+            <dd>
+              {Number(order.shipping_fee) === 0
+                ? "Grátis"
+                : formatPrice(Number(order.shipping_fee))}
+            </dd>
           </div>
-          <div className="mt-1 flex justify-between border-t border-border pt-2 text-base font-medium"><dt>Total pago</dt><dd>{formatPrice(Number(order.total))}</dd></div>
+          <div className="mt-1 flex justify-between border-t border-border pt-2 text-base font-medium">
+            <dt>Total pago</dt>
+            <dd>{formatPrice(Number(order.total))}</dd>
+          </div>
         </dl>
         <p className="mt-8 text-xs text-muted-foreground">
-          Pagamento confirmado pelo Mercado Pago{order.mp_payment_id ? ` (nº ${order.mp_payment_id})` : ""}. Este recibo não
-          substitui nota fiscal.
+          Pagamento confirmado pelo Mercado Pago
+          {order.mp_payment_id ? ` (nº ${order.mp_payment_id})` : ""}. Este recibo não substitui
+          nota fiscal.
         </p>
       </article>
     </div>

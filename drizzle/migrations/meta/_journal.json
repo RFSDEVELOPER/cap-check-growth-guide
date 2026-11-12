@@ -36,6 +36,13 @@
       "when": 1794351599859,
       "tag": "0004_etapa3_payment_stock_safety",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794486943418,
+      "tag": "0005_etapa4_quiz_delete",
+      "breakpoints": true
     }
   ]
 }

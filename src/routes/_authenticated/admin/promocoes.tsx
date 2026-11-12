@@ -8,10 +8,22 @@ import { AdminPage, Box, Empty, Field, Pill } from "@/components/admin/AdminUI";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
-import { adminCouponsQuery, adminProductsQuery, dateBR, parseMoney, type CouponRow } from "@/lib/admin-queries";
+import {
+  adminCouponsQuery,
+  adminProductsQuery,
+  dateBR,
+  parseMoney,
+  type CouponRow,
+} from "@/lib/admin-queries";
 import { formatPrice, hasActivePromo } from "@/lib/catalog";
 import { couponProblem, type Coupon } from "@/lib/checkout";
 
@@ -21,14 +33,6 @@ export const Route = createFileRoute("/_authenticated/admin/promocoes")({
       context.queryClient.ensureQueryData(adminCouponsQuery),
       context.queryClient.ensureQueryData(adminProductsQuery),
     ]),
-  head: () => ({ meta: [
-    { title: "Promoções e cupons — Admin Cia Cap" },
-    { name: "description", content: "Promoções e cupons na administração da Cia Cap." },
-    { property: "og:title", content: "Promoções e cupons — Admin Cia Cap" },
-    { property: "og:description", content: "Promoções e cupons na administração da Cia Cap." },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
   component: Promocoes,
 });
 
@@ -53,7 +57,11 @@ function Promocoes() {
   const [editing, setEditing] = useState<CouponRow | "new" | null>(null);
 
   const onSale = products.filter((p) =>
-    hasActivePromo({ price: Number(p.price), promoPrice: p.promo_price == null ? null : Number(p.promo_price), promoUntil: p.promo_until }),
+    hasActivePromo({
+      price: Number(p.price),
+      promoPrice: p.promo_price == null ? null : Number(p.promo_price),
+      promoUntil: p.promo_until,
+    }),
   );
 
   return (
@@ -82,7 +90,10 @@ function Promocoes() {
                 0,
               );
               return (
-                <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 py-4 text-sm">
+                <li
+                  key={c.id}
+                  className="flex flex-wrap items-center justify-between gap-3 py-4 text-sm"
+                >
                   <div>
                     <p className="flex flex-wrap items-center gap-2">
                       <strong className="font-mono text-base">{c.code}</strong>
@@ -90,13 +101,19 @@ function Promocoes() {
                     </p>
                     <p className="mt-0.5 text-muted-foreground">
                       {describe(c)}
-                      {Number(c.min_order) > 0 && ` · compras acima de ${formatPrice(Number(c.min_order))}`}
+                      {Number(c.min_order) > 0 &&
+                        ` · compras acima de ${formatPrice(Number(c.min_order))}`}
                       {c.ends_at && ` · até ${dateBR(c.ends_at)}`}
                       {` · usado ${c.used_count}${c.max_uses ? `/${c.max_uses}` : ""} vezes`}
                     </p>
                     {c.description && <p className="text-muted-foreground">{c.description}</p>}
                   </div>
-                  <Button variant="ghost" size="icon" aria-label={`Editar ${c.code}`} onClick={() => setEditing(c)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Editar ${c.code}`}
+                    onClick={() => setEditing(c)}
+                  >
                     <Pencil />
                   </Button>
                 </li>
@@ -120,12 +137,17 @@ function Promocoes() {
         ) : (
           <ul className="divide-y divide-border">
             {onSale.map((p) => (
-              <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm">
+              <li
+                key={p.id}
+                className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm"
+              >
                 <span>{p.name}</span>
                 <span>
                   <strong>{formatPrice(Number(p.promo_price))}</strong>{" "}
                   <s className="text-muted-foreground">{formatPrice(Number(p.price))}</s>
-                  {p.promo_until && <span className="text-muted-foreground"> · até {dateBR(p.promo_until)}</span>}
+                  {p.promo_until && (
+                    <span className="text-muted-foreground"> · até {dateBR(p.promo_until)}</span>
+                  )}
                 </span>
               </li>
             ))}
@@ -136,7 +158,9 @@ function Promocoes() {
       <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
         <DialogContent className="max-h-[92vh] overflow-y-auto bg-background sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="font-display text-2xl">{editing === "new" ? "Novo cupom" : "Editar cupom"}</DialogTitle>
+            <DialogTitle className="font-display text-2xl">
+              {editing === "new" ? "Novo cupom" : "Editar cupom"}
+            </DialogTitle>
           </DialogHeader>
           {editing && (
             <CouponForm
@@ -169,10 +193,22 @@ function CouponForm({ coupon, onDone }: { coupon: CouponRow | null; onDone: () =
     const value = kind === "frete" ? 0 : parseMoney(s("value"));
     const maxUses = s("max_uses") ? Math.floor(Number(s("max_uses"))) : null;
 
-    if (!/^[A-Z0-9_-]{3,30}$/.test(code)) { setError("Código com 3 a 30 letras ou números, sem espaços."); return; }
-    if (kind !== "frete" && (!value || value <= 0)) { setError("Informe o valor do desconto."); return; }
-    if (kind === "percent" && value! > 100) { setError("Percentual máximo é 100%."); return; }
-    if (maxUses != null && (!Number.isFinite(maxUses) || maxUses < 1)) { setError("Limite de usos inválido."); return; }
+    if (!/^[A-Z0-9_-]{3,30}$/.test(code)) {
+      setError("Código com 3 a 30 letras ou números, sem espaços.");
+      return;
+    }
+    if (kind !== "frete" && (!value || value <= 0)) {
+      setError("Informe o valor do desconto.");
+      return;
+    }
+    if (kind === "percent" && value! > 100) {
+      setError("Percentual máximo é 100%.");
+      return;
+    }
+    if (maxUses != null && (!Number.isFinite(maxUses) || maxUses < 1)) {
+      setError("Limite de usos inválido.");
+      return;
+    }
 
     const values = {
       code,
@@ -191,7 +227,14 @@ function CouponForm({ coupon, onDone }: { coupon: CouponRow | null; onDone: () =
       ? await supabase.from("coupons").update(values).eq("id", coupon.id)
       : await supabase.from("coupons").insert(values);
     setBusy(false);
-    if (dbError) { setError(dbError.code === "23505" ? "Já existe um cupom com esse código." : "Não foi possível salvar."); return; }
+    if (dbError) {
+      setError(
+        dbError.code === "23505"
+          ? "Já existe um cupom com esse código."
+          : "Não foi possível salvar.",
+      );
+      return;
+    }
     toast.success("Cupom salvo");
     onDone();
   }
@@ -199,7 +242,10 @@ function CouponForm({ coupon, onDone }: { coupon: CouponRow | null; onDone: () =
   async function remove() {
     if (!coupon || !confirm(`Excluir o cupom ${coupon.code}?`)) return;
     const { error: dbError } = await supabase.from("coupons").delete().eq("id", coupon.id);
-    if (dbError) { toast.error("Não foi possível excluir."); return; }
+    if (dbError) {
+      toast.error("Não foi possível excluir.");
+      return;
+    }
     onDone();
   }
 
@@ -207,7 +253,13 @@ function CouponForm({ coupon, onDone }: { coupon: CouponRow | null; onDone: () =
     <form onSubmit={onSubmit} className="grid gap-4" noValidate>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Código" htmlFor="code">
-          <Input id="code" name="code" defaultValue={coupon?.code} maxLength={30} className="h-11 rounded-xl font-mono uppercase" />
+          <Input
+            id="code"
+            name="code"
+            defaultValue={coupon?.code}
+            maxLength={30}
+            className="h-11 rounded-xl font-mono uppercase"
+          />
         </Field>
         <Field label="Tipo">
           <Select value={kind} onValueChange={(v) => setKind(v as Kind)}>
@@ -227,26 +279,67 @@ function CouponForm({ coupon, onDone }: { coupon: CouponRow | null; onDone: () =
       <div className="grid gap-4 sm:grid-cols-2">
         {kind !== "frete" && (
           <Field label={kind === "percent" ? "Desconto (%)" : "Desconto (R$)"} htmlFor="value">
-            <Input id="value" name="value" inputMode="decimal" defaultValue={coupon ? String(coupon.value).replace(".", ",") : ""} className="h-11 rounded-xl" />
+            <Input
+              id="value"
+              name="value"
+              inputMode="decimal"
+              defaultValue={coupon ? String(coupon.value).replace(".", ",") : ""}
+              className="h-11 rounded-xl"
+            />
           </Field>
         )}
         <Field label="Compra mínima (R$)" htmlFor="min_order" hint="Vazio = sem mínimo">
-          <Input id="min_order" name="min_order" inputMode="decimal" defaultValue={coupon && Number(coupon.min_order) > 0 ? String(coupon.min_order).replace(".", ",") : ""} className="h-11 rounded-xl" />
+          <Input
+            id="min_order"
+            name="min_order"
+            inputMode="decimal"
+            defaultValue={
+              coupon && Number(coupon.min_order) > 0
+                ? String(coupon.min_order).replace(".", ",")
+                : ""
+            }
+            className="h-11 rounded-xl"
+          />
         </Field>
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
         <Field label="Começa em" htmlFor="starts_at">
-          <Input id="starts_at" name="starts_at" type="date" defaultValue={toDate(coupon?.starts_at ?? null)} className="h-11 rounded-xl" />
+          <Input
+            id="starts_at"
+            name="starts_at"
+            type="date"
+            defaultValue={toDate(coupon?.starts_at ?? null)}
+            className="h-11 rounded-xl"
+          />
         </Field>
         <Field label="Termina em" htmlFor="ends_at">
-          <Input id="ends_at" name="ends_at" type="date" defaultValue={toDate(coupon?.ends_at ?? null)} className="h-11 rounded-xl" />
+          <Input
+            id="ends_at"
+            name="ends_at"
+            type="date"
+            defaultValue={toDate(coupon?.ends_at ?? null)}
+            className="h-11 rounded-xl"
+          />
         </Field>
         <Field label="Limite de usos" htmlFor="max_uses">
-          <Input id="max_uses" name="max_uses" type="number" min={1} defaultValue={coupon?.max_uses ?? ""} className="h-11 rounded-xl" />
+          <Input
+            id="max_uses"
+            name="max_uses"
+            type="number"
+            min={1}
+            defaultValue={coupon?.max_uses ?? ""}
+            className="h-11 rounded-xl"
+          />
         </Field>
       </div>
       <Field label="Anotação (só para você)" htmlFor="description">
-        <Input id="description" name="description" defaultValue={coupon?.description ?? ""} maxLength={120} className="h-11 rounded-xl" />
+        <Input
+          id="description"
+          name="description"
+          defaultValue={coupon?.description ?? ""}
+          maxLength={120}
+          className="h-11 rounded-xl"
+        />
       </Field>
       <label className="flex items-center gap-3 text-sm">
         <Switch checked={active} onCheckedChange={setActive} /> Cupom ativo

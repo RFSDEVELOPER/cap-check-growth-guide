@@ -9,11 +9,22 @@ import { ImagePicker } from "@/components/admin/ImagePicker";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { adminAffiliatesQuery, slugify, uploadProductImage, type AffiliateRow } from "@/lib/admin-queries";
+import {
+  adminAffiliatesQuery,
+  slugify,
+  uploadProductImage,
+  type AffiliateRow,
+} from "@/lib/admin-queries";
 import {
   AFFILIATE_STORES,
   CATEGORY_LABEL,
@@ -24,14 +35,6 @@ import {
 
 export const Route = createFileRoute("/_authenticated/admin/afiliados")({
   loader: ({ context }) => context.queryClient.ensureQueryData(adminAffiliatesQuery),
-  head: () => ({ meta: [
-    { title: "Links de afiliado — Admin Cia Cap" },
-    { name: "description", content: "Links de afiliado na administração da Cia Cap." },
-    { property: "og:title", content: "Links de afiliado — Admin Cia Cap" },
-    { property: "og:description", content: "Links de afiliado na administração da Cia Cap." },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
   component: Afiliados,
 });
 
@@ -59,7 +62,8 @@ function Afiliados() {
     >
       {missing > 0 && (
         <p className="mb-4 rounded-2xl bg-copper/10 p-4 text-sm text-copper">
-          {missing} {missing === 1 ? "item ainda está" : "itens ainda estão"} sem link. Edite e cole o link de afiliado.
+          {missing} {missing === 1 ? "item ainda está" : "itens ainda estão"} sem link. Edite e cole
+          o link de afiliado.
         </p>
       )}
       {items.length === 0 ? (
@@ -67,8 +71,15 @@ function Afiliados() {
       ) : (
         <ul className="grid gap-3">
           {items.map((p) => (
-            <li key={p.id} className="flex items-center gap-4 rounded-3xl border border-border bg-card p-4">
-              <img src={p.image} alt="" className="size-14 shrink-0 rounded-2xl bg-sage object-cover" />
+            <li
+              key={p.id}
+              className="flex items-center gap-4 rounded-3xl border border-border bg-card p-4"
+            >
+              <img
+                src={p.image}
+                alt=""
+                className="size-14 shrink-0 rounded-2xl bg-sage object-cover"
+              />
               <div className="min-w-0 flex-1">
                 <p className="flex flex-wrap items-center gap-2 font-medium">
                   {p.name}
@@ -87,7 +98,12 @@ function Afiliados() {
                   </a>
                 </Button>
               )}
-              <Button variant="ghost" size="icon" aria-label={`Editar ${p.name}`} onClick={() => setEditing(p)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={`Editar ${p.name}`}
+                onClick={() => setEditing(p)}
+              >
                 <Pencil />
               </Button>
             </li>
@@ -98,7 +114,9 @@ function Afiliados() {
       <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
         <DialogContent className="max-h-[92vh] overflow-y-auto bg-background sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle className="font-display text-2xl">{editing === "new" ? "Novo item" : "Editar item"}</DialogTitle>
+            <DialogTitle className="font-display text-2xl">
+              {editing === "new" ? "Novo item" : "Editar item"}
+            </DialogTitle>
           </DialogHeader>
           {editing && (
             <AffiliateForm
@@ -116,8 +134,12 @@ function Afiliados() {
 }
 
 function AffiliateForm({ item, onDone }: { item: Row | null; onDone: () => void }) {
-  const [category, setCategory] = useState<ProductCategory>((item?.category as ProductCategory) ?? "tratamento");
-  const [store, setStore] = useState<AffiliateStore>((item?.store as AffiliateStore) ?? "Mercado Livre");
+  const [category, setCategory] = useState<ProductCategory>(
+    (item?.category as ProductCategory) ?? "tratamento",
+  );
+  const [store, setStore] = useState<AffiliateStore>(
+    (item?.store as AffiliateStore) ?? "Mercado Livre",
+  );
   const [active, setActive] = useState(item?.active ?? true);
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
@@ -129,8 +151,14 @@ function AffiliateForm({ item, onDone }: { item: Row | null; onDone: () => void 
     const s = (k: string) => String(f.get(k) ?? "").trim();
     const name = s("name");
     const url = s("url") || "#";
-    if (name.length < 2) { setError("Informe o nome."); return; }
-    if (url !== "#" && !/^https:\/\/[^\s]+$/i.test(url)) { setError("O link precisa começar com https://"); return; }
+    if (name.length < 2) {
+      setError("Informe o nome.");
+      return;
+    }
+    if (url !== "#" && !/^https:\/\/[^\s]+$/i.test(url)) {
+      setError("O link precisa começar com https://");
+      return;
+    }
     const id = item?.id ?? slugify(name);
     setError(null);
     setBusy(true);
@@ -152,7 +180,11 @@ function AffiliateForm({ item, onDone }: { item: Row | null; onDone: () => void 
         ? await supabase.from("affiliate_products").update(values).eq("id", item.id)
         : await supabase.from("affiliate_products").insert({ id, ...values });
       if (dbError) {
-        setError(dbError.code === "23505" ? "Já existe um item com esse nome." : "Não foi possível salvar.");
+        setError(
+          dbError.code === "23505"
+            ? "Já existe um item com esse nome."
+            : "Não foi possível salvar.",
+        );
         setBusy(false);
         return;
       }
@@ -167,7 +199,10 @@ function AffiliateForm({ item, onDone }: { item: Row | null; onDone: () => void 
   async function remove() {
     if (!item || !confirm(`Excluir "${item.name}"?`)) return;
     const { error: dbError } = await supabase.from("affiliate_products").delete().eq("id", item.id);
-    if (dbError) { toast.error("Não foi possível excluir."); return; }
+    if (dbError) {
+      toast.error("Não foi possível excluir.");
+      return;
+    }
     onDone();
   }
 
@@ -177,7 +212,13 @@ function AffiliateForm({ item, onDone }: { item: Row | null; onDone: () => void 
         <ImagePicker current={item?.image ?? fallbackImage("", category)} onFile={setFile} />
         <div className="grid flex-1 gap-4">
           <Field label="Nome" htmlFor="name">
-            <Input id="name" name="name" defaultValue={item?.name} maxLength={100} className="h-11 rounded-xl" />
+            <Input
+              id="name"
+              name="name"
+              defaultValue={item?.name}
+              maxLength={100}
+              className="h-11 rounded-xl"
+            />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Loja">
@@ -211,18 +252,47 @@ function AffiliateForm({ item, onDone }: { item: Row | null; onDone: () => void 
           </div>
         </div>
       </div>
-      <Field label="Link de afiliado" htmlFor="url" hint="Copie o link gerado no painel de afiliados da loja.">
-        <Input id="url" name="url" type="url" defaultValue={item?.url === "#" ? "" : item?.url} placeholder="https://" className="h-11 rounded-xl" />
+      <Field
+        label="Link de afiliado"
+        htmlFor="url"
+        hint="Copie o link gerado no painel de afiliados da loja."
+      >
+        <Input
+          id="url"
+          name="url"
+          type="url"
+          defaultValue={item?.url === "#" ? "" : item?.url}
+          placeholder="https://"
+          className="h-11 rounded-xl"
+        />
       </Field>
       <Field label="Descrição" htmlFor="description">
-        <Textarea id="description" name="description" defaultValue={item?.description} maxLength={300} className="rounded-xl" />
+        <Textarea
+          id="description"
+          name="description"
+          defaultValue={item?.description}
+          maxLength={300}
+          className="rounded-xl"
+        />
       </Field>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Selo (opcional)" htmlFor="badge">
-          <Input id="badge" name="badge" defaultValue={item?.badge ?? ""} maxLength={30} className="h-11 rounded-xl" />
+          <Input
+            id="badge"
+            name="badge"
+            defaultValue={item?.badge ?? ""}
+            maxLength={30}
+            className="h-11 rounded-xl"
+          />
         </Field>
         <Field label="Ordem" htmlFor="sort_order">
-          <Input id="sort_order" name="sort_order" type="number" defaultValue={item?.sort_order ?? 0} className="h-11 rounded-xl" />
+          <Input
+            id="sort_order"
+            name="sort_order"
+            type="number"
+            defaultValue={item?.sort_order ?? 0}
+            className="h-11 rounded-xl"
+          />
         </Field>
       </div>
       <label className="flex items-center gap-3 text-sm">

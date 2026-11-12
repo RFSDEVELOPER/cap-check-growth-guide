@@ -28,10 +28,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let alive = true;
     const apply = (user: User | null) => {
-      setState((s) => ({ user, ready: true, isAdmin: user && s.user?.id === user.id ? s.isAdmin : false }));
+      setState((s) => ({
+        user,
+        ready: true,
+        isAdmin: user && s.user?.id === user.id ? s.isAdmin : false,
+      }));
       if (user) {
         checkIsAdmin(user.id)
-          .then((isAdmin) => alive && setState((s) => (s.user?.id === user.id ? { ...s, isAdmin } : s)))
+          .then(
+            (isAdmin) => alive && setState((s) => (s.user?.id === user.id ? { ...s, isAdmin } : s)),
+          )
           .catch(() => undefined);
       }
     };

@@ -47,11 +47,20 @@ function ResetPassword() {
         <Logo />
       </header>
       <main className="container-site flex flex-1 justify-center pt-12">
-        <form onSubmit={onSubmit} className="grid w-full max-w-md gap-4 self-start rounded-[2rem] border border-border bg-card p-8">
+        <form
+          onSubmit={onSubmit}
+          className="grid w-full max-w-md gap-4 self-start rounded-[2rem] border border-border bg-card p-8"
+        >
           <h1 className="text-3xl">Crie uma nova senha</h1>
           <div className="grid gap-1.5">
             <Label htmlFor="password">Nova senha</Label>
-            <Input id="password" name="password" type="password" autoComplete="new-password" className="h-11 rounded-xl" />
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              className="h-11 rounded-xl"
+            />
             {error && <p className="text-xs text-destructive">{error}</p>}
           </div>
           <Button type="submit" variant="pill" size="xl" disabled={busy}>

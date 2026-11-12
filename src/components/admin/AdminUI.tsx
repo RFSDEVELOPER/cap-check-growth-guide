@@ -19,7 +19,9 @@ export function AdminPage({
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl">{title}</h1>
-          {description && <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{description}</p>}
+          {description && (
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{description}</p>
+          )}
         </div>
         {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
       </div>
@@ -28,7 +30,17 @@ export function AdminPage({
   );
 }
 
-export function Box({ title, action, children, className }: { title?: string; action?: ReactNode; children: ReactNode; className?: string }) {
+export function Box({
+  title,
+  action,
+  children,
+  className,
+}: {
+  title?: string;
+  action?: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
   return (
     <section className={cn("rounded-3xl border border-border bg-card p-5 md:p-6", className)}>
       {(title || action) && (
@@ -82,7 +94,17 @@ export function Field({
   );
 }
 
-export function Stat({ label, value, hint, tone }: { label: string; value: ReactNode; hint?: string; tone?: Tone | undefined }) {
+export function Stat({
+  label,
+  value,
+  hint,
+  tone,
+}: {
+  label: string;
+  value: ReactNode;
+  hint?: string;
+  tone?: Tone | undefined;
+}) {
   return (
     <div
       className={cn(
@@ -98,7 +120,11 @@ export function Stat({ label, value, hint, tone }: { label: string; value: React
 }
 
 export function Empty({ children }: { children: ReactNode }) {
-  return <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">{children}</p>;
+  return (
+    <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+      {children}
+    </p>
+  );
 }
 
 export const paymentTone = (status: string): Tone =>
@@ -109,4 +135,10 @@ export const paymentTone = (status: string): Tone =>
       : "neutral";
 
 export const fulfillmentTone = (status: string): Tone =>
-  status === "entregue" ? "good" : status === "cancelado" ? "bad" : status === "enviado" ? "neutral" : "warn";
+  status === "entregue"
+    ? "good"
+    : status === "cancelado"
+      ? "bad"
+      : status === "enviado"
+        ? "neutral"
+        : "warn";

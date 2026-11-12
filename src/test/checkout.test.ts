@@ -5,7 +5,16 @@ import { buildOrder, CheckoutError, couponProblem, type Coupon } from "@/lib/che
 
 const NOW = new Date("2026-11-08T12:00:00Z");
 
-const product = (id: string, price: number, extra: Partial<{ promoPrice: number | null; promoUntil: string | null; stock: number; deliveryDays: number }> = {}) => ({
+const product = (
+  id: string,
+  price: number,
+  extra: Partial<{
+    promoPrice: number | null;
+    promoUntil: string | null;
+    stock: number;
+    deliveryDays: number;
+  }> = {},
+) => ({
   id,
   name: id,
   price,
@@ -16,10 +25,10 @@ const product = (id: string, price: number, extra: Partial<{ promoPrice: number 
   ...extra,
 });
 
-const catalog = (overrides: Partial<{ shippingFee: number; freeShippingMin: number | null }> = {}, products = [
-  product("shampoo-cia-cap", 59),
-  product("tonico-cia-cap", 79, { deliveryDays: 10 }),
-]) => ({
+const catalog = (
+  overrides: Partial<{ shippingFee: number; freeShippingMin: number | null }> = {},
+  products = [product("shampoo-cia-cap", 59), product("tonico-cia-cap", 79, { deliveryDays: 10 })],
+) => ({
   products,
   settings: { shippingFee: 0, freeShippingMin: null, lowStockAlert: 5, ...overrides },
 });
@@ -52,12 +61,22 @@ describe("buildOrder", () => {
   });
 
   it("uses the longest delivery time among the items", () => {
-    const order = buildOrder([{ id: "shampoo-cia-cap", qty: 1 }, { id: "tonico-cia-cap", qty: 1 }], catalog(), null, NOW);
+    const order = buildOrder(
+      [
+        { id: "shampoo-cia-cap", qty: 1 },
+        { id: "tonico-cia-cap", qty: 1 },
+      ],
+      catalog(),
+      null,
+      NOW,
+    );
     expect(order.deliveryDays).toBe(10);
   });
 
   it("rejects products that are not in the store", () => {
-    expect(() => buildOrder([{ id: "produto-falso", qty: 1 }], catalog(), null, NOW)).toThrow(CheckoutError);
+    expect(() => buildOrder([{ id: "produto-falso", qty: 1 }], catalog(), null, NOW)).toThrow(
+      CheckoutError,
+    );
   });
 
   it("limits each product to 10 units", () => {
@@ -67,7 +86,9 @@ describe("buildOrder", () => {
 
   it("refuses more units than in stock", () => {
     const c = catalog({}, [product("shampoo-cia-cap", 59, { stock: 2 })]);
-    expect(() => buildOrder([{ id: "shampoo-cia-cap", qty: 3 }], c, null, NOW)).toThrow(/sem_estoque/);
+    expect(() => buildOrder([{ id: "shampoo-cia-cap", qty: 3 }], c, null, NOW)).toThrow(
+      /sem_estoque/,
+    );
   });
 
   it("rejects an empty cart", () => {
@@ -75,7 +96,10 @@ describe("buildOrder", () => {
   });
 
   it("charges the promo price while it is valid, and the normal price after it ends", () => {
-    const p = product("shampoo-cia-cap", 59, { promoPrice: 49, promoUntil: "2026-11-10T00:00:00Z" });
+    const p = product("shampoo-cia-cap", 59, {
+      promoPrice: 49,
+      promoUntil: "2026-11-10T00:00:00Z",
+    });
     expect(effectivePrice(p, NOW)).toBe(49);
     expect(effectivePrice(p, new Date("2026-11-11T00:00:00Z"))).toBe(59);
   });
@@ -94,8 +118,14 @@ describe("buildOrder", () => {
 
   it("applies a fixed R$20 coupon and a free-shipping coupon", () => {
     const c = catalog({ shippingFee: 15 });
-    expect(buildOrder([{ id: "shampoo-cia-cap", qty: 1 }], c, coupon({ kind: "fixed", value: 20 }), NOW).total).toBe(54);
-    expect(buildOrder([{ id: "shampoo-cia-cap", qty: 1 }], c, coupon({ kind: "frete", value: 0 }), NOW).total).toBe(59);
+    expect(
+      buildOrder([{ id: "shampoo-cia-cap", qty: 1 }], c, coupon({ kind: "fixed", value: 20 }), NOW)
+        .total,
+    ).toBe(54);
+    expect(
+      buildOrder([{ id: "shampoo-cia-cap", qty: 1 }], c, coupon({ kind: "frete", value: 0 }), NOW)
+        .total,
+    ).toBe(59);
   });
 
   it("refuses expired, used-up or below-minimum coupons", () => {

@@ -21,7 +21,8 @@ export function SyncPaymentsButton() {
         setBusy(true);
         try {
           const res = await sync();
-          if (!res.ok) toast.error("Mercado Pago ainda não está ativado (falta a chave de acesso).");
+          if (!res.ok)
+            toast.error("Mercado Pago ainda não está ativado (falta a chave de acesso).");
           else {
             toast.success(`Pagamentos conferidos com o Mercado Pago (${res.synced})`);
             queryClient.invalidateQueries({ queryKey: ["admin"] });

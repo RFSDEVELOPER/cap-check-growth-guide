@@ -15,7 +15,12 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AvaliacaoRouteImport } from './routes/avaliacao'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as LojaRouteImport } from './routes/loja'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as TermosRouteImport } from './routes/termos'
+import { Route as TrocasRouteImport } from './routes/trocas'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/conta'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
@@ -59,9 +64,34 @@ const LojaRoute = LojaRouteImport.update({
   path: '/loja',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrocasRoute = TrocasRouteImport.update({
+  id: '/trocas',
+  path: '/trocas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
@@ -146,7 +176,12 @@ export interface FileRoutesByFullPath {
   '/avaliacao': typeof AvaliacaoRoute
   '/carrinho': typeof CarrinhoRoute
   '/loja': typeof LojaRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/termos': typeof TermosRoute
+  '/trocas': typeof TrocasRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/conta': typeof AuthenticatedContaRoute
   '/admin/afiliados': typeof AuthenticatedAdminAfiliadosRoute
@@ -167,7 +202,12 @@ export interface FileRoutesByTo {
   '/avaliacao': typeof AvaliacaoRoute
   '/carrinho': typeof CarrinhoRoute
   '/loja': typeof LojaRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/termos': typeof TermosRoute
+  '/trocas': typeof TrocasRoute
   '/conta': typeof AuthenticatedContaRoute
   '/admin/afiliados': typeof AuthenticatedAdminAfiliadosRoute
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
@@ -189,7 +229,12 @@ export interface FileRoutesById {
   '/avaliacao': typeof AvaliacaoRoute
   '/carrinho': typeof CarrinhoRoute
   '/loja': typeof LojaRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/termos': typeof TermosRoute
+  '/trocas': typeof TrocasRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/conta': typeof AuthenticatedContaRoute
   '/_authenticated/admin/afiliados': typeof AuthenticatedAdminAfiliadosRoute
@@ -212,7 +257,12 @@ export interface FileRouteTypes {
     | '/avaliacao'
     | '/carrinho'
     | '/loja'
+    | '/privacidade'
     | '/reset-password'
+    | '/robots.txt'
+    | '/sitemap.xml'
+    | '/termos'
+    | '/trocas'
     | '/admin'
     | '/conta'
     | '/admin/afiliados'
@@ -233,7 +283,12 @@ export interface FileRouteTypes {
     | '/avaliacao'
     | '/carrinho'
     | '/loja'
+    | '/privacidade'
     | '/reset-password'
+    | '/robots.txt'
+    | '/sitemap.xml'
+    | '/termos'
+    | '/trocas'
     | '/conta'
     | '/admin/afiliados'
     | '/admin/assinaturas'
@@ -254,7 +309,12 @@ export interface FileRouteTypes {
     | '/avaliacao'
     | '/carrinho'
     | '/loja'
+    | '/privacidade'
     | '/reset-password'
+    | '/robots.txt'
+    | '/sitemap.xml'
+    | '/termos'
+    | '/trocas'
     | '/_authenticated/admin'
     | '/_authenticated/conta'
     | '/_authenticated/admin/afiliados'
@@ -277,7 +337,12 @@ export interface RootRouteChildren {
   AvaliacaoRoute: typeof AvaliacaoRoute
   CarrinhoRoute: typeof CarrinhoRoute
   LojaRoute: typeof LojaRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TermosRoute: typeof TermosRoute
+  TrocasRoute: typeof TrocasRoute
   ApiPublicMercadopagoWebhookRoute: typeof ApiPublicMercadopagoWebhookRoute
 }
 
@@ -325,11 +390,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LojaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trocas': {
+      id: '/trocas'
+      path: '/trocas'
+      fullPath: '/trocas'
+      preLoaderRoute: typeof TrocasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -478,7 +578,12 @@ const rootRouteChildren: RootRouteChildren = {
   AvaliacaoRoute: AvaliacaoRoute,
   CarrinhoRoute: CarrinhoRoute,
   LojaRoute: LojaRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TermosRoute: TermosRoute,
+  TrocasRoute: TrocasRoute,
   ApiPublicMercadopagoWebhookRoute: ApiPublicMercadopagoWebhookRoute,
 }
 export const routeTree = rootRouteImport

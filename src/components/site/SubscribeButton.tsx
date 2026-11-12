@@ -32,7 +32,8 @@ export function SubscribeButton({
         window.location.href = res.url;
         return;
       }
-      if (res.error === "ja_assinante") toast("Você já tem uma assinatura ativa. Veja em Minha conta.");
+      if (res.error === "ja_assinante")
+        toast("Você já tem uma assinatura ativa. Veja em Minha conta.");
       else if (res.error === "pagamento_indisponivel")
         toast.error("O pagamento ainda está sendo ativado. Tente novamente em breve.");
       else toast.error("Não conseguimos abrir o pagamento. Tente de novo.");

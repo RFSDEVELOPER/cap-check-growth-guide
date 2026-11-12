@@ -2,7 +2,16 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertTriangle, ArrowRight } from "lucide-react";
 
-import { AdminPage, Box, Empty, Pill, Stat, fulfillmentTone, paymentTone } from "@/components/admin/AdminUI";
+import {
+  AdminPage,
+  Box,
+  Empty,
+  Pill,
+  Stat,
+  fulfillmentTone,
+  paymentTone,
+} from "@/components/admin/AdminUI";
+import { SetupWarnings } from "@/components/admin/SetupWarnings";
 import { SyncPaymentsButton } from "@/components/admin/SyncPaymentsButton";
 import {
   adminOrdersQuery,
@@ -14,6 +23,7 @@ import {
   shippingOf,
 } from "@/lib/admin-queries";
 import { formatPrice } from "@/lib/catalog";
+import { monthStartBR } from "@/lib/dates";
 import { FULFILLMENT_LABEL, STATUS_LABEL, type FulfillmentStatus } from "@/lib/checkout";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
@@ -24,14 +34,6 @@ export const Route = createFileRoute("/_authenticated/admin/")({
       context.queryClient.ensureQueryData(adminSubscriptionsQuery),
       context.queryClient.ensureQueryData(adminSettingsQuery),
     ]),
-  head: () => ({ meta: [
-    { title: "Visão geral — Admin Cia Cap" },
-    { name: "description", content: "Visão geral na administração da Cia Cap." },
-    { property: "og:title", content: "Visão geral — Admin Cia Cap" },
-    { property: "og:description", content: "Visão geral na administração da Cia Cap." },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
   component: Overview,
 });
 
@@ -41,11 +43,16 @@ function Overview() {
   const { data: subs } = useSuspenseQuery(adminSubscriptionsQuery);
   const { data: settings } = useSuspenseQuery(adminSettingsQuery);
 
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-  const paidThisMonth = orders.filter((o) => o.status === "pago" && o.created_at >= monthStart);
+  // "This month" is counted by payment date (paid_at, filled by sql/etapa3-banco.sql; older
+  // orders fall back to the order date) in Brazil time.
+  const monthStart = monthStartBR();
+  const paidAt = (o: (typeof orders)[number]) =>
+    (o as { paid_at?: string | null }).paid_at ?? o.created_at;
+  const paidThisMonth = orders.filter((o) => o.status === "pago" && paidAt(o) >= monthStart);
   const revenue = paidThisMonth.reduce((s, o) => s + Number(o.total), 0);
-  const toShip = orders.filter((o) => o.status === "pago" && ["aguardando", "separando"].includes(o.fulfillment_status));
+  const toShip = orders.filter(
+    (o) => o.status === "pago" && ["aguardando", "separando"].includes(o.fulfillment_status),
+  );
   const late = orders.filter((o) => isLate(o));
   const active = subs.filter((s) => s.status === "ativa");
   const mrr = active.reduce((s, x) => s + Number(x.amount), 0);
@@ -58,8 +65,13 @@ function Overview() {
       description="Resumo das vendas, entregas e estoque da Cia Cap."
       actions={<SyncPaymentsButton />}
     >
+      <SetupWarnings />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat label="Vendas pagas no mês" value={formatPrice(revenue)} hint={`${paidThisMonth.length} pedidos`} />
+        <Stat
+          label="Vendas pagas no mês"
+          value={formatPrice(revenue)}
+          hint={`${paidThisMonth.length} pedidos`}
+        />
         <Stat label="Planos ativos" value={active.length} hint={`${formatPrice(mrr)} por mês`} />
         <Stat
           label="Pedidos a enviar"
@@ -89,7 +101,10 @@ function Overview() {
           ) : (
             <ul className="divide-y divide-border">
               {toShip.slice(0, 8).map((o) => (
-                <li key={o.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm">
+                <li
+                  key={o.id}
+                  className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm"
+                >
                   <div>
                     <p className="font-medium">
                       #{o.id.slice(0, 8)} · {shippingOf(o).name ?? "Cliente"}
@@ -132,7 +147,9 @@ function Overview() {
                     <img src={p.image} alt="" className="size-10 rounded-xl bg-sage object-cover" />
                     {p.name}
                   </span>
-                  <Pill tone={p.stock === 0 ? "bad" : "warn"}>{p.stock === 0 ? "Esgotado" : `${p.stock} un.`}</Pill>
+                  <Pill tone={p.stock === 0 ? "bad" : "warn"}>
+                    {p.stock === 0 ? "Esgotado" : `${p.stock} un.`}
+                  </Pill>
                 </li>
               ))}
             </ul>
@@ -142,11 +159,16 @@ function Overview() {
 
       <Box title="Últimos pedidos" className="mt-6">
         {orders.length === 0 ? (
-          <Empty>Nenhum pedido ainda. Eles aparecem aqui assim que alguém finaliza uma compra.</Empty>
+          <Empty>
+            Nenhum pedido ainda. Eles aparecem aqui assim que alguém finaliza uma compra.
+          </Empty>
         ) : (
           <ul className="divide-y divide-border">
             {orders.slice(0, 8).map((o) => (
-              <li key={o.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm">
+              <li
+                key={o.id}
+                className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm"
+              >
                 <span>
                   <span className="font-mono text-muted-foreground">#{o.id.slice(0, 8)}</span> ·{" "}
                   {shippingOf(o).name ?? "Cliente"} · {dateBR(o.created_at)}

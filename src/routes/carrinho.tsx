@@ -393,7 +393,7 @@ function Carrinho() {
                   {cepMismatch ? (
                     <p className="text-xs text-destructive" role="alert">
                       Este CEP é diferente do endereço da sua conta. Calcule o frete com o CEP{" "}
-                      {profileCep?.replace(/(\d{5})(\d{3})/, "$1-$2")} ou{" "}
+                      {profileCep!.replace(/(\d{5})(\d{3})/, "$1-$2")} ou{" "}
                       <Link to="/conta" className="underline">
                         atualize seu endereço
                       </Link>

@@ -8,7 +8,13 @@ import { toast } from "sonner";
 import { AdminPage, Box, Field, Pill } from "@/components/admin/AdminUI";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,21 +42,25 @@ export const Route = createFileRoute("/_authenticated/admin/configuracoes")({
       context.queryClient.ensureQueryData(paymentSettingsQuery),
       context.queryClient.ensureQueryData(hintsQuery),
     ]),
-  head: () => ({ meta: [
-    { title: "Configurações de pagamentos e frete — Admin Cia Cap" },
-    { name: "description", content: "Configurações de pagamentos e frete na administração da Cia Cap." },
-    { property: "og:title", content: "Configurações de pagamentos e frete — Admin Cia Cap" },
-    { property: "og:description", content: "Configurações de pagamentos e frete na administração da Cia Cap." },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
   component: Configuracoes,
 });
 
-const money = (v: number | string | null | undefined) => (v == null ? "" : String(v).replace(".", ","));
-type SecretName = "mp_access_token_teste" | "mp_access_token_producao" | "mp_webhook_secret" | "melhorenvio_token";
+const money = (v: number | string | null | undefined) =>
+  v == null ? "" : String(v).replace(".", ",");
+type SecretName =
+  "mp_access_token_teste" | "mp_access_token_producao" | "mp_webhook_secret" | "melhorenvio_token";
 
-function SecretInput({ id, label, hint, last4 }: { id: SecretName; label: string; hint?: string | undefined; last4?: string | undefined }) {
+function SecretInput({
+  id,
+  label,
+  hint,
+  last4,
+}: {
+  id: SecretName;
+  label: string;
+  hint?: string | undefined;
+  last4?: string | undefined;
+}) {
   return (
     <Field label={label} htmlFor={id} {...(hint ? { hint } : {})}>
       <div className="flex items-center gap-2">
@@ -108,7 +118,8 @@ function Pagamentos() {
   const saveSecretsFrom = useSecretSaver();
   const [production, setProduction] = useState(pay?.mode === "producao");
   const [busy, setBusy] = useState(false);
-  const webhookUrl = typeof window !== "undefined" ? `${window.location.origin}/api/public/mercadopago/webhook` : "";
+  const webhookUrl =
+    typeof window !== "undefined" ? `${window.location.origin}/api/public/mercadopago/webhook` : "";
   const mode = production ? "producao" : "teste";
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
@@ -128,12 +139,20 @@ function Pagamentos() {
         })
         .eq("id", true);
       if (error) throw error;
-      await saveSecretsFrom(f, ["mp_access_token_teste", "mp_access_token_producao", "mp_webhook_secret"]);
+      await saveSecretsFrom(f, [
+        "mp_access_token_teste",
+        "mp_access_token_producao",
+        "mp_webhook_secret",
+      ]);
       form.reset();
       queryClient.invalidateQueries({ queryKey: paymentSettingsQuery.queryKey });
       toast.success("Pagamentos salvos");
     } catch (err) {
-      toast.error(err instanceof Error && err.message.startsWith("Chave") ? err.message : "Não foi possível salvar.");
+      toast.error(
+        err instanceof Error && err.message.startsWith("Chave")
+          ? err.message
+          : "Não foi possível salvar.",
+      );
     }
     setBusy(false);
   }
@@ -143,8 +162,12 @@ function Pagamentos() {
       <form onSubmit={onSubmit} className="grid gap-5" noValidate>
         <Field label="Meio de pagamento">
           <Select value="mercadopago" disabled>
-            <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
-            <SelectContent><SelectItem value="mercadopago">Mercado Pago</SelectItem></SelectContent>
+            <SelectTrigger className="h-11 rounded-xl">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="mercadopago">Mercado Pago</SelectItem>
+            </SelectContent>
           </Select>
         </Field>
 
@@ -152,7 +175,9 @@ function Pagamentos() {
           <span>
             <span className="font-medium">{production ? "Modo produção" : "Modo teste"}</span>
             <span className="block text-xs text-muted-foreground">
-              {production ? "Cobranças reais nos clientes." : "Use as credenciais de teste; nenhum valor é cobrado."}
+              {production
+                ? "Cobranças reais nos clientes."
+                : "Use as credenciais de teste; nenhum valor é cobrado."}
             </span>
           </span>
           <Switch checked={production} onCheckedChange={setProduction} aria-label="Modo produção" />
@@ -161,16 +186,36 @@ function Pagamentos() {
         <div className="grid gap-4 rounded-2xl bg-secondary/50 p-4">
           <p className="eyebrow text-muted-foreground">Credenciais de teste</p>
           <Field label="Chave pública (Public Key)" htmlFor="public_key_teste">
-            <Input id="public_key_teste" name="public_key_teste" defaultValue={pay?.public_key_teste ?? ""} placeholder="TEST-..." className="h-11 rounded-xl font-mono" />
+            <Input
+              id="public_key_teste"
+              name="public_key_teste"
+              defaultValue={pay?.public_key_teste ?? ""}
+              placeholder="TEST-..."
+              className="h-11 rounded-xl font-mono"
+            />
           </Field>
-          <SecretInput id="mp_access_token_teste" label="Chave secreta (Access Token)" last4={hints.mp_access_token_teste} />
+          <SecretInput
+            id="mp_access_token_teste"
+            label="Chave secreta (Access Token)"
+            last4={hints.mp_access_token_teste}
+          />
         </div>
         <div className="grid gap-4 rounded-2xl bg-secondary/50 p-4">
           <p className="eyebrow text-muted-foreground">Credenciais de produção</p>
           <Field label="Chave pública (Public Key)" htmlFor="public_key_producao">
-            <Input id="public_key_producao" name="public_key_producao" defaultValue={pay?.public_key_producao ?? ""} placeholder="APP_USR-..." className="h-11 rounded-xl font-mono" />
+            <Input
+              id="public_key_producao"
+              name="public_key_producao"
+              defaultValue={pay?.public_key_producao ?? ""}
+              placeholder="APP_USR-..."
+              className="h-11 rounded-xl font-mono"
+            />
           </Field>
-          <SecretInput id="mp_access_token_producao" label="Chave secreta (Access Token)" last4={hints.mp_access_token_producao} />
+          <SecretInput
+            id="mp_access_token_producao"
+            label="Chave secreta (Access Token)"
+            last4={hints.mp_access_token_producao}
+          />
         </div>
 
         <SecretInput
@@ -180,21 +225,28 @@ function Pagamentos() {
           last4={hints.mp_webhook_secret}
         />
         <div className="flex items-center gap-2">
-          <Input readOnly value={webhookUrl} aria-label="Endereço do webhook" className="h-10 rounded-xl font-mono text-xs" />
+          <Input
+            readOnly
+            value={webhookUrl}
+            aria-label="Endereço do webhook"
+            className="h-10 rounded-xl font-mono text-xs"
+          />
           <Button
             type="button"
             variant="ghost"
             size="icon"
             aria-label="Copiar endereço"
-            onClick={() => navigator.clipboard.writeText(webhookUrl).then(() => toast.success("Copiado"))}
+            onClick={() =>
+              navigator.clipboard.writeText(webhookUrl).then(() => toast.success("Copiado"))
+            }
           >
             <Copy />
           </Button>
         </div>
 
         <p className="text-xs text-muted-foreground">
-          As chaves secretas ficam guardadas criptografadas no servidor e nunca voltam para o navegador — aqui só aparecem os
-          4 últimos caracteres.
+          As chaves secretas ficam guardadas criptografadas no servidor e nunca voltam para o
+          navegador — aqui só aparecem os 4 últimos caracteres.
         </p>
         <Button type="submit" variant="pill" size="xl" disabled={busy}>
           {busy && <Loader2 className="animate-spin" />} Salvar pagamentos
@@ -222,10 +274,18 @@ function Frete() {
     const low = Math.floor(Number(s("low_stock_alert") || "5"));
     const handling = Math.floor(Number(s("handling_days") || "0"));
     const cep = s("origin_cep").replace(/\D/g, "");
-    if (shipping < 0 || (freeMin != null && freeMin < 0) || !Number.isFinite(low) || low < 0)
-      { toast.error("Confira os valores."); return; }
-    if (!Number.isFinite(handling) || handling < 0 || handling > 60) { toast.error("Prazo de manuseio entre 0 e 60 dias."); return; }
-    if (cep && cep.length !== 8) { toast.error("CEP de origem com 8 números."); return; }
+    if (shipping < 0 || (freeMin != null && freeMin < 0) || !Number.isFinite(low) || low < 0) {
+      toast.error("Confira os valores.");
+      return;
+    }
+    if (!Number.isFinite(handling) || handling < 0 || handling > 60) {
+      toast.error("Prazo de manuseio entre 0 e 60 dias.");
+      return;
+    }
+    if (cep && cep.length !== 8) {
+      toast.error("CEP de origem com 8 números.");
+      return;
+    }
     setBusy(true);
     try {
       const { error } = await supabase
@@ -246,7 +306,11 @@ function Frete() {
       queryClient.invalidateQueries({ queryKey: ["admin", "settings"] });
       queryClient.invalidateQueries({ queryKey: ["storefront"] });
     } catch (err) {
-      toast.error(err instanceof Error && err.message.startsWith("Chave") ? err.message : "Não foi possível salvar.");
+      toast.error(
+        err instanceof Error && err.message.startsWith("Chave")
+          ? err.message
+          : "Não foi possível salvar.",
+      );
     }
     setBusy(false);
   }
@@ -255,7 +319,8 @@ function Frete() {
     <Box>
       <form onSubmit={onSubmit} className="grid gap-5" noValidate>
         <p className="text-sm text-muted-foreground">
-          O frete por CEP usa Correios e Jadlog pela plataforma Melhor Envio. Sem token, vale o frete fixo abaixo.
+          O frete por CEP usa Correios e Jadlog pela plataforma Melhor Envio. Sem token, vale o
+          frete fixo abaixo.
         </p>
         <SecretInput
           id="melhorenvio_token"
@@ -264,23 +329,70 @@ function Frete() {
           last4={hints.melhorenvio_token}
         />
         <label className="flex items-center gap-3 text-sm">
-          <Switch checked={sandbox} onCheckedChange={setSandbox} /> Token de teste (sandbox do Melhor Envio)
+          <Switch checked={sandbox} onCheckedChange={setSandbox} /> Token de teste (sandbox do
+          Melhor Envio)
         </label>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="CEP de origem" htmlFor="origin_cep" hint="De onde os pedidos saem.">
-            <Input id="origin_cep" name="origin_cep" inputMode="numeric" defaultValue={settings?.origin_cep ?? ""} placeholder="00000-000" className="h-11 rounded-xl font-mono" />
+            <Input
+              id="origin_cep"
+              name="origin_cep"
+              inputMode="numeric"
+              defaultValue={settings?.origin_cep ?? ""}
+              placeholder="00000-000"
+              className="h-11 rounded-xl font-mono"
+            />
           </Field>
-          <Field label="Prazo de manuseio (dias)" htmlFor="handling_days" hint="Somado ao prazo da transportadora.">
-            <Input id="handling_days" name="handling_days" type="number" min={0} max={60} defaultValue={settings?.handling_days ?? 0} className="h-11 rounded-xl font-mono" />
+          <Field
+            label="Prazo de manuseio (dias)"
+            htmlFor="handling_days"
+            hint="Somado ao prazo da transportadora."
+          >
+            <Input
+              id="handling_days"
+              name="handling_days"
+              type="number"
+              min={0}
+              max={60}
+              defaultValue={settings?.handling_days ?? 0}
+              className="h-11 rounded-xl font-mono"
+            />
           </Field>
-          <Field label="Frete grátis a partir de (R$)" htmlFor="free_shipping_min" hint="Vazio = desligado.">
-            <Input id="free_shipping_min" name="free_shipping_min" inputMode="decimal" defaultValue={money(settings?.free_shipping_min)} className="h-11 rounded-xl font-mono" />
+          <Field
+            label="Frete grátis a partir de (R$)"
+            htmlFor="free_shipping_min"
+            hint="Vazio = desligado."
+          >
+            <Input
+              id="free_shipping_min"
+              name="free_shipping_min"
+              inputMode="decimal"
+              defaultValue={money(settings?.free_shipping_min)}
+              className="h-11 rounded-xl font-mono"
+            />
           </Field>
-          <Field label="Frete fixo sem cotação (R$)" htmlFor="shipping_fee" hint="Usado enquanto o Melhor Envio não estiver ligado.">
-            <Input id="shipping_fee" name="shipping_fee" inputMode="decimal" defaultValue={money(settings?.shipping_fee ?? 0)} className="h-11 rounded-xl font-mono" />
+          <Field
+            label="Frete fixo sem cotação (R$)"
+            htmlFor="shipping_fee"
+            hint="Usado enquanto o Melhor Envio não estiver ligado."
+          >
+            <Input
+              id="shipping_fee"
+              name="shipping_fee"
+              inputMode="decimal"
+              defaultValue={money(settings?.shipping_fee ?? 0)}
+              className="h-11 rounded-xl font-mono"
+            />
           </Field>
           <Field label="Avisar estoque baixo com (unidades)" htmlFor="low_stock_alert">
-            <Input id="low_stock_alert" name="low_stock_alert" type="number" min={0} defaultValue={settings?.low_stock_alert ?? 5} className="h-11 rounded-xl font-mono" />
+            <Input
+              id="low_stock_alert"
+              name="low_stock_alert"
+              type="number"
+              min={0}
+              defaultValue={settings?.low_stock_alert ?? 5}
+              className="h-11 rounded-xl font-mono"
+            />
           </Field>
         </div>
         <Button type="submit" variant="pill" size="xl" disabled={busy}>

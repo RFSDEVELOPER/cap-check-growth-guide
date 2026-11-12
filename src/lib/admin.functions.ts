@@ -2,16 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { assertAdmin } from "@/lib/admin-guard";
 import { getMpToken } from "@/lib/credentials.server";
 import { applyPreapproval, mpRequest, syncOrder } from "@/lib/mercadopago.server";
-
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
-
-async function assertAdmin(context: { supabase: SupabaseClient<Database>; userId: string }) {
-  const { data } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
-  if (!data) throw new Error("Acesso restrito à administração");
-}
 
 /** Re-reads recent pending orders and open subscriptions from Mercado Pago. */
 export const adminSyncPayments = createServerFn({ method: "POST" })
@@ -24,7 +17,12 @@ export const adminSyncPayments = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const since = new Date(Date.now() - 45 * 86_400_000).toISOString();
     const [{ data: orders }, { data: subs }] = await Promise.all([
-      supabaseAdmin.from("orders").select("id").eq("status", "pendente").gte("created_at", since).limit(50),
+      supabaseAdmin
+        .from("orders")
+        .select("id")
+        .eq("status", "pendente")
+        .gte("created_at", since)
+        .limit(50),
       supabaseAdmin
         .from("subscriptions")
         .select("mp_preapproval_id")

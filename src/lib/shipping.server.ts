@@ -32,7 +32,10 @@ interface MeQuote {
 }
 
 /** Quotes Correios and Jadlog through Melhor Envio. Returns null when shipping quotes aren't configured. */
-export async function quoteShipping(toCep: string, items: ShippingItem[]): Promise<ShippingOption[] | null> {
+export async function quoteShipping(
+  toCep: string,
+  items: ShippingItem[],
+): Promise<ShippingOption[] | null> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: settings } = await supabaseAdmin
     .from("store_settings")
@@ -41,14 +44,16 @@ export async function quoteShipping(toCep: string, items: ShippingItem[]): Promi
   const token = await readSecret("melhorenvio_token");
   if (!token || !settings?.origin_cep) return null;
 
-  const base = settings.shipping_sandbox ? "https://sandbox.melhorenvio.com.br" : "https://melhorenvio.com.br";
+  const base = settings.shipping_sandbox
+    ? "https://sandbox.melhorenvio.com.br"
+    : "https://melhorenvio.com.br";
   const res = await fetch(`${base}/api/v2/me/shipment/calculate`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: "application/json",
       "Content-Type": "application/json",
-      "User-Agent": "Cia Cap (raul.sistema.francisco@gmail.com)",
+      "User-Agent": `Cia Cap (${process.env["SHIPPING_CONTACT_EMAIL"] ?? "contato@ciacap.com.br"})`,
     },
     body: JSON.stringify({
       from: { postal_code: settings.origin_cep },
@@ -71,7 +76,10 @@ export async function quoteShipping(toCep: string, items: ShippingItem[]): Promi
   const quotes = (await res.json()) as MeQuote[];
   const handling = settings.handling_days ?? 0;
   return quotes
-    .filter((q) => !q.error && q.company && ALLOWED_COMPANIES.has(q.company.id) && (q.custom_price ?? q.price))
+    .filter(
+      (q) =>
+        !q.error && q.company && ALLOWED_COMPANIES.has(q.company.id) && (q.custom_price ?? q.price),
+    )
     .map((q) => ({
       id: String(q.id),
       name: `${q.company!.name} ${q.name}`,
