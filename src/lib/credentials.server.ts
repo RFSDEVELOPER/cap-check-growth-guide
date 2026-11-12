@@ -26,7 +26,11 @@ async function admin() {
 
 export async function saveSecret(name: SecretName, value: string) {
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await key(), new TextEncoder().encode(value));
+  const ct = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv },
+    await key(),
+    new TextEncoder().encode(value),
+  );
   const db = await admin();
   const { error } = await db.from("integration_secrets").upsert({
     name,
@@ -45,10 +49,18 @@ export async function deleteSecret(name: SecretName) {
 
 export async function readSecret(name: SecretName): Promise<string | null> {
   const db = await admin();
-  const { data } = await db.from("integration_secrets").select("ciphertext, iv").eq("name", name).maybeSingle();
+  const { data } = await db
+    .from("integration_secrets")
+    .select("ciphertext, iv")
+    .eq("name", name)
+    .maybeSingle();
   if (!data) return null;
   try {
-    const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(data.iv) }, await key(), unb64(data.ciphertext));
+    const pt = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: unb64(data.iv) },
+      await key(),
+      unb64(data.ciphertext),
+    );
     return new TextDecoder().decode(pt);
   } catch (e) {
     console.error(`Could not decrypt ${name}`, e);
@@ -67,9 +79,13 @@ export async function getMpToken(): Promise<string | null> {
   const db = await admin();
   const { data } = await db.from("payment_settings").select("mode").maybeSingle();
   const mode = data?.mode === "producao" ? "producao" : "teste";
-  return (await readSecret(`mp_access_token_${mode}`)) ?? process.env["MERCADOPAGO_ACCESS_TOKEN"] ?? null;
+  return (
+    (await readSecret(`mp_access_token_${mode}`)) ?? process.env["MERCADOPAGO_ACCESS_TOKEN"] ?? null
+  );
 }
 
 export async function getMpWebhookSecret(): Promise<string | null> {
-  return (await readSecret("mp_webhook_secret")) ?? process.env["MERCADOPAGO_WEBHOOK_SECRET"] ?? null;
+  return (
+    (await readSecret("mp_webhook_secret")) ?? process.env["MERCADOPAGO_WEBHOOK_SECRET"] ?? null
+  );
 }

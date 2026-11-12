@@ -15,12 +15,13 @@ export const Route = createFileRoute("/loja")({
   loader: ({ context }) => context.queryClient.ensureQueryData(storefrontQuery),
   head: () => ({
     meta: [
-      { title: "Loja Cia Cap — Produtos para queda de cabelo" },
+      { title: "Loja Cia Cap — Cuidados para o cabelo e o couro cabeludo" },
       {
         name: "description",
-        content: "Minoxidil, shampoos, tônicos e suplementos selecionados para complementar seu tratamento capilar.",
+        content:
+          "Shampoos, tônicos e suplementos selecionados para a sua rotina de cuidados capilares.",
       },
-      { property: "og:title", content: "Loja Cia Cap — Produtos para queda de cabelo" },
+      { property: "og:title", content: "Loja Cia Cap — Cuidados para o cabelo e o couro cabeludo" },
       {
         property: "og:description",
         content: "Produtos selecionados de lojas parceiras para completar sua rotina capilar.",
@@ -47,7 +48,7 @@ function Loja() {
       <main className="container-site pb-20 pt-12 md:pt-16">
         <span className="eyebrow text-copper">Loja Cia Cap</span>
         <h1 className="mt-3 max-w-2xl text-4xl leading-tight md:text-6xl">
-          Produtos que completam o tratamento
+          Produtos que completam sua rotina
         </h1>
         <p className="mt-4 max-w-xl text-muted-foreground">
           Produtos da marca Cia Cap e itens selecionados de lojas parceiras para a rotina de quem
@@ -70,7 +71,11 @@ function Loja() {
           </div>
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {store.products.map((p) => (
-              <ShopProductCard key={p.id} product={p} lowStockAlert={store.settings.lowStockAlert} />
+              <ShopProductCard
+                key={p.id}
+                product={p}
+                lowStockAlert={store.settings.lowStockAlert}
+              />
             ))}
           </div>
         </section>
@@ -106,8 +111,8 @@ function Loja() {
         <div className="mt-10 flex gap-3 rounded-2xl bg-secondary/70 p-5 text-sm text-muted-foreground">
           <Info className="size-5 shrink-0 text-primary" />
           <p>
-            Alguns links são de afiliados: podemos receber uma comissão quando você compra, sem custo
-            extra. Produtos não substituem a avaliação médica.
+            Alguns links são de afiliados: podemos receber uma comissão quando você compra, sem
+            custo extra. Produtos não substituem a avaliação médica.
           </p>
         </div>
 

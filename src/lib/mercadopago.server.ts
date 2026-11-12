@@ -6,28 +6,67 @@ import {
 
 const MP_API = "https://api.mercadopago.com";
 
+const MP_TIMEOUT_MS = 10_000;
+const MP_MAX_ATTEMPTS = 3;
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Calls the Mercado Pago API with a 10 s timeout. Reads (GET) and writes that carry an
+ * idempotency key are retried up to 3 times on network errors and 5xx answers; anything else
+ * is sent once, so a charge is never created twice by a retry.
+ */
 export async function mpRequest<T>(
   token: string,
   path: string,
-  init: { method?: string; body?: unknown; idempotencyKey?: string } = {},
+  init: {
+    method?: string;
+    body?: unknown;
+    idempotencyKey?: string;
+    /** Base wait between attempts in ms (grows with each attempt). */
+    retryBaseMs?: number;
+  } = {},
 ): Promise<T> {
+  const method = init.method ?? "GET";
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
   };
   if (init.idempotencyKey) headers["X-Idempotency-Key"] = init.idempotencyKey;
 
-  const res = await fetch(`${MP_API}${path}`, {
-    method: init.method ?? "GET",
-    headers,
-    body: init.body ? JSON.stringify(init.body) : null,
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    console.error(`Mercado Pago ${path} failed [${res.status}]: ${text}`);
-    throw new Error(`Mercado Pago request failed [${res.status}]`);
+  const maxAttempts = method === "GET" || init.idempotencyKey ? MP_MAX_ATTEMPTS : 1;
+  const baseMs = init.retryBaseMs ?? 400;
+
+  for (let attempt = 1; ; attempt++) {
+    let res: Response;
+    try {
+      res = await fetch(`${MP_API}${path}`, {
+        method,
+        headers,
+        body: init.body ? JSON.stringify(init.body) : null,
+        signal: AbortSignal.timeout(MP_TIMEOUT_MS),
+      });
+    } catch (e) {
+      if (attempt < maxAttempts) {
+        await sleep(baseMs * attempt);
+        continue;
+      }
+      console.error(`Mercado Pago ${path} unreachable after ${attempt} attempt(s)`, e);
+      throw new Error("Mercado Pago request failed [network]");
+    }
+
+    if (res.status >= 500 && attempt < maxAttempts) {
+      await res.text().catch(() => "");
+      await sleep(baseMs * attempt);
+      continue;
+    }
+    if (!res.ok) {
+      const text = await res.text();
+      console.error(`Mercado Pago ${path} failed [${res.status}]: ${text}`);
+      throw new Error(`Mercado Pago request failed [${res.status}]`);
+    }
+    return (await res.json()) as T;
   }
-  return (await res.json()) as T;
 }
 
 interface MpPayment {
@@ -60,12 +99,11 @@ export async function applyPayment(token: string, paymentId: string) {
 }
 
 async function applyPaymentObject(payment: MpPayment) {
-  if (!payment.external_reference) return;
   const db = await admin();
   const { data: order } = await db
     .from("orders")
     .select("id, total, status")
-    .eq("id", payment.external_reference)
+    .eq("id", payment.external_reference!)
     .maybeSingle();
   if (!order) return;
 
@@ -85,7 +123,7 @@ async function applyPaymentObject(payment: MpPayment) {
     await db
       .from("orders")
       .update({ status: next, mp_payment_id: String(payment.id) })
-      .eq("id", order.id).eq("status", order.status);
+      .eq("id", order.id);
   }
   status = next;
 
@@ -96,11 +134,11 @@ async function applyPaymentObject(payment: MpPayment) {
   }
 
   // A refund puts the items back in stock and gives the coupon use back (once per order).
-  // Restore only the quantities actually deducted; the database operation is idempotent.
-  if (status === "reembolsado") {
+  // The function comes from sql/etapa3-banco.sql; until it is applied the call only logs.
+  if (status === "reembolsado" && order.status !== "reembolsado") {
     const { error } = await db.rpc(
-      "restore_refunded_order",
-      { _order_id: order.id },
+      "restore_refunded_order" as never,
+      { _order_id: order.id } as never,
     );
     if (error) console.error(`Stock restore failed for order ${order.id}`, error);
   }

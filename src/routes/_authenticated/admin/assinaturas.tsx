@@ -9,7 +9,12 @@ import { AdminPage, Empty, Pill, Stat, paymentTone } from "@/components/admin/Ad
 import { SyncPaymentsButton } from "@/components/admin/SyncPaymentsButton";
 import { Button } from "@/components/ui/button";
 import { adminCancelSubscription } from "@/lib/admin.functions";
-import { adminCustomersQuery, adminPlansQuery, adminSubscriptionsQuery, dateBR } from "@/lib/admin-queries";
+import {
+  adminCustomersQuery,
+  adminPlansQuery,
+  adminSubscriptionsQuery,
+  dateBR,
+} from "@/lib/admin-queries";
 import { formatPrice } from "@/lib/catalog";
 import { STATUS_LABEL } from "@/lib/checkout";
 import { cn } from "@/lib/utils";
@@ -21,14 +26,6 @@ export const Route = createFileRoute("/_authenticated/admin/assinaturas")({
       context.queryClient.ensureQueryData(adminCustomersQuery),
       context.queryClient.ensureQueryData(adminPlansQuery),
     ]),
-  head: () => ({ meta: [
-    { title: "Assinaturas — Admin Cia Cap" },
-    { name: "description", content: "Assinaturas na administração da Cia Cap." },
-    { property: "og:title", content: "Assinaturas — Admin Cia Cap" },
-    { property: "og:description", content: "Assinaturas na administração da Cia Cap." },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
   component: Assinaturas,
 });
 
@@ -49,14 +46,20 @@ function Assinaturas() {
   const list = filter === "todas" ? subs : subs.filter((s) => s.status === filter);
 
   async function onCancel(id: string, name: string) {
-    if (!confirm(`Cancelar a assinatura de ${name}? A cobrança mensal no Mercado Pago será encerrada.`)) return;
+    if (
+      !confirm(
+        `Cancelar a assinatura de ${name}? A cobrança mensal no Mercado Pago será encerrada.`,
+      )
+    )
+      return;
     setBusyId(id);
     try {
       const res = await cancel({ data: { id } });
       if (res.ok) {
         toast.success("Assinatura cancelada");
         queryClient.invalidateQueries({ queryKey: ["admin", "subscriptions"] });
-      } else if (res.reason === "pagamento_indisponivel") toast.error("Mercado Pago ainda não está ativado.");
+      } else if (res.reason === "pagamento_indisponivel")
+        toast.error("Mercado Pago ainda não está ativado.");
       else toast.error("Não foi possível cancelar agora.");
     } catch {
       toast.error("Não foi possível cancelar agora.");
@@ -72,8 +75,14 @@ function Assinaturas() {
     >
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat label="Assinaturas ativas" value={active.length} />
-        <Stat label="Receita mensal" value={formatPrice(active.reduce((s, x) => s + Number(x.amount), 0))} />
-        <Stat label="Aguardando pagamento" value={subs.filter((s) => s.status === "pendente").length} />
+        <Stat
+          label="Receita mensal"
+          value={formatPrice(active.reduce((s, x) => s + Number(x.amount), 0))}
+        />
+        <Stat
+          label="Aguardando pagamento"
+          value={subs.filter((s) => s.status === "pendente").length}
+        />
       </div>
 
       <div className="mt-6 flex gap-1 overflow-x-auto">
@@ -84,7 +93,9 @@ function Assinaturas() {
             onClick={() => setFilter(f)}
             className={cn(
               "shrink-0 rounded-full border px-3 py-1.5 text-sm capitalize transition-colors",
-              filter === f ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card hover:bg-secondary",
+              filter === f
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-card hover:bg-secondary",
             )}
           >
             {f === "todas" ? "Todas" : STATUS_LABEL[f]}
@@ -103,13 +114,19 @@ function Assinaturas() {
               const p = person(s.user_id);
               const name = p?.full_name ?? p?.email ?? "Paciente";
               return (
-                <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 text-sm">
+                <li
+                  key={s.id}
+                  className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 text-sm"
+                >
                   <div>
                     <p className="font-medium">{name}</p>
                     <p className="text-muted-foreground">
-                      Plano {planName(s.plan_id)} · {formatPrice(Number(s.amount))}/mês · desde {dateBR(s.created_at)}
+                      Plano {planName(s.plan_id)} · {formatPrice(Number(s.amount))}/mês · desde{" "}
+                      {dateBR(s.created_at)}
                     </p>
-                    <p className="text-muted-foreground">{[p?.email, p?.phone].filter(Boolean).join(" · ")}</p>
+                    <p className="text-muted-foreground">
+                      {[p?.email, p?.phone].filter(Boolean).join(" · ")}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Pill tone={paymentTone(s.status)}>{STATUS_LABEL[s.status] ?? s.status}</Pill>

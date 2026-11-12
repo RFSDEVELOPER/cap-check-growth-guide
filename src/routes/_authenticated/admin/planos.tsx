@@ -10,7 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { adminPlansQuery, adminSubscriptionsQuery, parseMoney, type PlanRow } from "@/lib/admin-queries";
+import {
+  adminPlansQuery,
+  adminSubscriptionsQuery,
+  parseMoney,
+  type PlanRow,
+} from "@/lib/admin-queries";
 
 export const Route = createFileRoute("/_authenticated/admin/planos")({
   loader: ({ context }) =>
@@ -18,14 +23,6 @@ export const Route = createFileRoute("/_authenticated/admin/planos")({
       context.queryClient.ensureQueryData(adminPlansQuery),
       context.queryClient.ensureQueryData(adminSubscriptionsQuery),
     ]),
-  head: () => ({ meta: [
-    { title: "Planos — Admin Cia Cap" },
-    { name: "description", content: "Planos na administração da Cia Cap." },
-    { property: "og:title", content: "Planos — Admin Cia Cap" },
-    { property: "og:description", content: "Planos na administração da Cia Cap." },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
   component: Planos,
 });
 
@@ -34,7 +31,10 @@ function Planos() {
   const { data: subs } = useSuspenseQuery(adminSubscriptionsQuery);
 
   return (
-    <AdminPage title="Planos" description="Edite nome, preço mensal, descrição e o que vem incluso em cada plano.">
+    <AdminPage
+      title="Planos"
+      description="Edite nome, preço mensal, descrição e o que vem incluso em cada plano."
+    >
       <div className="mb-6 flex gap-3 rounded-2xl bg-secondary/70 p-4 text-sm text-muted-foreground">
         <Info className="size-5 shrink-0 text-primary" />
         <p>
@@ -44,7 +44,11 @@ function Planos() {
       </div>
       <div className="grid gap-6 xl:grid-cols-3">
         {plans.map((p) => (
-          <PlanForm key={p.id} plan={p} activeCount={subs.filter((s) => s.plan_id === p.id && s.status === "ativa").length} />
+          <PlanForm
+            key={p.id}
+            plan={p}
+            activeCount={subs.filter((s) => s.plan_id === p.id && s.status === "ativa").length}
+          />
         ))}
       </div>
     </AdminPage>
@@ -62,8 +66,14 @@ function PlanForm({ plan, activeCount }: { plan: PlanRow; activeCount: number })
     const f = new FormData(e.currentTarget);
     const s = (k: string) => String(f.get(k) ?? "").trim();
     const price = parseMoney(s("price"));
-    if (s("name").length < 2) { toast.error("Informe o nome do plano."); return; }
-    if (!price || price <= 0) { toast.error("Informe um preço válido."); return; }
+    if (s("name").length < 2) {
+      toast.error("Informe o nome do plano.");
+      return;
+    }
+    if (!price || price <= 0) {
+      toast.error("Informe um preço válido.");
+      return;
+    }
     const features = s("features")
       .split("\n")
       .map((l) => l.trim())
@@ -80,29 +90,60 @@ function PlanForm({ plan, activeCount }: { plan: PlanRow; activeCount: number })
       .update({ name: s("name"), price, tagline: s("tagline"), features, highlight, active })
       .eq("id", plan.id);
     setBusy(false);
-    if (error) { toast.error("Não foi possível salvar o plano."); return; }
+    if (error) {
+      toast.error("Não foi possível salvar o plano.");
+      return;
+    }
     toast.success(`Plano ${s("name")} salvo`);
     queryClient.invalidateQueries({ queryKey: ["admin", "plans"] });
     queryClient.invalidateQueries({ queryKey: ["storefront"] });
   }
 
   return (
-    <form onSubmit={onSubmit} className="grid content-start gap-4 rounded-3xl border border-border bg-card p-6" noValidate>
+    <form
+      onSubmit={onSubmit}
+      className="grid content-start gap-4 rounded-3xl border border-border bg-card p-6"
+      noValidate
+    >
       <div className="flex items-center justify-between">
         <span className="eyebrow text-copper">{plan.id}</span>
         <Pill tone={activeCount ? "good" : "neutral"}>{activeCount} assinantes</Pill>
       </div>
       <Field label="Nome" htmlFor={`name-${plan.id}`}>
-        <Input id={`name-${plan.id}`} name="name" defaultValue={plan.name} maxLength={40} className="h-11 rounded-xl" />
+        <Input
+          id={`name-${plan.id}`}
+          name="name"
+          defaultValue={plan.name}
+          maxLength={40}
+          className="h-11 rounded-xl"
+        />
       </Field>
       <Field label="Preço por mês (R$)" htmlFor={`price-${plan.id}`}>
-        <Input id={`price-${plan.id}`} name="price" inputMode="decimal" defaultValue={String(plan.price).replace(".", ",")} className="h-11 rounded-xl font-mono" />
+        <Input
+          id={`price-${plan.id}`}
+          name="price"
+          inputMode="decimal"
+          defaultValue={String(plan.price).replace(".", ",")}
+          className="h-11 rounded-xl font-mono"
+        />
       </Field>
       <Field label="Frase curta" htmlFor={`tagline-${plan.id}`}>
-        <Input id={`tagline-${plan.id}`} name="tagline" defaultValue={plan.tagline} maxLength={80} className="h-11 rounded-xl" />
+        <Input
+          id={`tagline-${plan.id}`}
+          name="tagline"
+          defaultValue={plan.tagline}
+          maxLength={80}
+          className="h-11 rounded-xl"
+        />
       </Field>
       <Field label="O que inclui" htmlFor={`features-${plan.id}`} hint="Um item por linha.">
-        <Textarea id={`features-${plan.id}`} name="features" defaultValue={plan.features.join("\n")} rows={5} className="rounded-xl" />
+        <Textarea
+          id={`features-${plan.id}`}
+          name="features"
+          defaultValue={plan.features.join("\n")}
+          rows={5}
+          className="rounded-xl"
+        />
       </Field>
       <label className="flex items-center gap-3 text-sm">
         <Switch checked={highlight} onCheckedChange={setHighlight} /> Destacar como “Mais escolhido”

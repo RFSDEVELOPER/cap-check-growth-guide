@@ -2,12 +2,21 @@ import { ImagePlus } from "lucide-react";
 import { useEffect, useState } from "react";
 
 /** Shows the current photo and lets the admin choose a new file (uploaded on save). */
-export function ImagePicker({ current, onFile }: { current: string; onFile: (file: File | null) => void }) {
+export function ImagePicker({
+  current,
+  onFile,
+}: {
+  current: string;
+  onFile: (file: File | null) => void;
+}) {
   const [preview, setPreview] = useState<string | null>(null);
 
-  useEffect(() => () => {
-    if (preview) URL.revokeObjectURL(preview);
-  }, [preview]);
+  useEffect(
+    () => () => {
+      if (preview) URL.revokeObjectURL(preview);
+    },
+    [preview],
+  );
 
   return (
     <label className="group relative block aspect-square w-32 cursor-pointer overflow-hidden rounded-2xl bg-sage">

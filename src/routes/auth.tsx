@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/site/SiteHeader";
@@ -80,6 +81,7 @@ function AuthPage() {
   const { user, ready } = useAuth();
   const [mode, setMode] = useState<"entrar" | "criar" | "esqueci">("entrar");
   const [busy, setBusy] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sentTo, setSentTo] = useState<string | null>(null);
 
@@ -114,6 +116,11 @@ function AuthPage() {
 
   async function onSignUp(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!acceptedTerms) {
+      return setErrors({
+        terms: "Aceite os Termos de Uso e a Política de Privacidade para continuar.",
+      });
+    }
     const parsed = signUpSchema.safeParse(readForm(e));
     if (!parsed.success) return setErrors(fieldErrors(parsed.error.issues));
     setErrors({});
@@ -317,6 +324,30 @@ function AuthPage() {
                     autoComplete="new-password"
                     error={errors["password"]}
                   />
+                  <div className="grid gap-1.5">
+                    <label className="flex cursor-pointer items-start gap-3 text-sm">
+                      <Checkbox
+                        checked={acceptedTerms}
+                        onCheckedChange={(v) => setAcceptedTerms(v === true)}
+                        className="mt-0.5"
+                        aria-invalid={!!errors["terms"]}
+                      />
+                      <span className="leading-relaxed text-muted-foreground">
+                        Li e concordo com os{" "}
+                        <Link to="/termos" target="_blank" className="text-copper underline">
+                          Termos de Uso
+                        </Link>{" "}
+                        e a{" "}
+                        <Link to="/privacidade" target="_blank" className="text-copper underline">
+                          Política de Privacidade
+                        </Link>
+                        .
+                      </span>
+                    </label>
+                    {errors["terms"] && (
+                      <p className="text-xs text-destructive">{errors["terms"]}</p>
+                    )}
+                  </div>
                   <Button type="submit" variant="pill" size="xl" disabled={busy}>
                     {busy && <Loader2 className="animate-spin" />} Criar conta
                   </Button>

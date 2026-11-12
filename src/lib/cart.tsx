@@ -1,5 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 
 import { effectivePrice, MAX_QTY_PER_ITEM, type ShopProduct } from "@/lib/catalog";
 import type { CartLine } from "@/lib/checkout";
@@ -53,20 +61,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const add = useCallback(
-    (id: string, qty = 1) => {
-      setLines((prev) => {
-        const current = prev.find((l) => l.id === id)?.qty ?? 0;
-        const next = Math.min(current + qty, MAX_QTY_PER_ITEM);
-        return prev.some((l) => l.id === id)
-          ? prev.map((l) => (l.id === id ? { ...l, qty: next } : l))
-          : [...prev, { id, qty: next }];
-      });
-    },
+  const add = useCallback((id: string, qty = 1) => {
+    setLines((prev) => {
+      const current = prev.find((l) => l.id === id)?.qty ?? 0;
+      const next = Math.min(current + qty, MAX_QTY_PER_ITEM);
+      return prev.some((l) => l.id === id)
+        ? prev.map((l) => (l.id === id ? { ...l, qty: next } : l))
+        : [...prev, { id, qty: next }];
+    });
+  }, []);
+
+  const remove = useCallback(
+    (id: string) => setLines((prev) => prev.filter((l) => l.id !== id)),
     [],
   );
-
-  const remove = useCallback((id: string) => setLines((prev) => prev.filter((l) => l.id !== id)), []);
   const clear = useCallback(() => setLines([]), []);
 
   // Drop products that were removed from the store.

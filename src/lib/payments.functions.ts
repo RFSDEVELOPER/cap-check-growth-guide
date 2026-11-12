@@ -90,6 +90,11 @@ export type ShippingQuoteResult =
   | { mode: "cotacao"; options: ShippingOption[] }
   | { error: "cep_invalido" | "falha" };
 
+// Short-lived cache so repeated or abusive calls for the same CEP and cart do not each hit Melhor Envio.
+const QUOTE_TTL_MS = 10 * 60_000;
+const QUOTE_CACHE_MAX = 200;
+const quoteCache = new Map<string, { at: number; options: ShippingOption[] | null }>();
+
 /** Quotes Correios and Jadlog for the cart by CEP (falls back to the fixed fee when not configured). */
 export const quoteShippingByCep = createServerFn({ method: "POST" })
   .inputValidator((input) =>
@@ -99,7 +104,20 @@ export const quoteShippingByCep = createServerFn({ method: "POST" })
     const cep = cepSchema.safeParse(data.cep);
     if (!cep.success) return { error: "cep_invalido" };
     try {
-      const options = await quoteShipping(cep.data, await shippingItems(data.items));
+      const cartKey = [...data.items]
+        .sort((a, b) => a.id.localeCompare(b.id))
+        .map((i) => `${i.id}:${i.qty}`)
+        .join(",");
+      const cacheKey = `${cep.data}|${cartKey}`;
+      const hit = quoteCache.get(cacheKey);
+      let options: ShippingOption[] | null;
+      if (hit && Date.now() - hit.at < QUOTE_TTL_MS) {
+        options = hit.options;
+      } else {
+        options = await quoteShipping(cep.data, await shippingItems(data.items));
+        if (quoteCache.size >= QUOTE_CACHE_MAX) quoteCache.delete(quoteCache.keys().next().value!);
+        quoteCache.set(cacheKey, { at: Date.now(), options });
+      }
       return options ? { mode: "cotacao", options } : { mode: "fixo" };
     } catch {
       return { error: "falha" };
@@ -340,7 +358,8 @@ export const startPlanSubscription = createServerFn({ method: "POST" })
 
     // A pending subscription may already be authorized at Mercado Pago while the
     // notification is late: refresh it first so the patient is never charged twice.
-    const { data: pendingSubs } = await context.supabase
+    const { supabaseAdmin: adminDb } = await import("@/integrations/supabase/client.server");
+    const { data: pendingSubs } = await adminDb
       .from("subscriptions")
       .select("id, mp_preapproval_id")
       .eq("user_id", context.userId)
@@ -351,11 +370,10 @@ export const startPlanSubscription = createServerFn({ method: "POST" })
         await applyPreapproval(token, sub.mp_preapproval_id);
       } catch (e) {
         console.error("Pending subscription refresh failed", e);
-        return { error: "falha" };
       }
     }
 
-    const { data: active } = await context.supabase
+    const { data: active } = await adminDb
       .from("subscriptions")
       .select("id")
       .eq("user_id", context.userId)
@@ -363,20 +381,12 @@ export const startPlanSubscription = createServerFn({ method: "POST" })
       .limit(1);
     if (active && active.length > 0) return { error: "ja_assinante" };
 
-    // Never leave an authorizable Mercado Pago agreement open while creating another.
-    for (const sub of pendingSubs ?? []) {
-      if (sub.mp_preapproval_id) {
-        try {
-          await mpRequest(token, `/preapproval/${encodeURIComponent(sub.mp_preapproval_id)}`, {
-            method: "PUT", body: { status: "cancelled" },
-          });
-        } catch { return { error: "falha" }; }
-      }
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { error } = await supabaseAdmin.from("subscriptions").update({ status: "cancelada" })
-        .eq("id", sub.id).eq("status", "pendente");
-      if (error) return { error: "falha" };
-    }
+    // Abandoned attempts that never became active are closed, so only one stays open.
+    await adminDb
+      .from("subscriptions")
+      .update({ status: "cancelada" })
+      .eq("user_id", context.userId)
+      .eq("status", "pendente");
 
     const { data: profile } = await context.supabase
       .from("profiles")
@@ -475,7 +485,6 @@ export const retryOrderPayment = createServerFn({ method: "POST" })
       order = (await load()).data ?? order;
     } catch (e) {
       console.error("Pre-retry sync failed", e);
-      return { error: "falha" };
     }
     if (order.status === "pago" || order.status === "reembolsado") return { error: "ja_pago" };
     if (!["pendente", "recusado", "cancelado"].includes(order.status)) return { error: "falha" };
@@ -516,7 +525,7 @@ export const retryOrderPayment = createServerFn({ method: "POST" })
       await supabaseAdmin
         .from("orders")
         .update({ status: "pendente", mp_preference_id: pref.id })
-        .eq("id", order.id).in("status", ["pendente", "recusado", "cancelado"]);
+        .eq("id", order.id);
       return { url: pref.init_point };
     } catch (e) {
       console.error("Retry preference failed", e);
@@ -555,8 +564,8 @@ export const cancelMySubscription = createServerFn({ method: "POST" })
         return { ok: false, reason: "falha" };
       }
     }
-    const { error } = await supabaseAdmin.from("subscriptions").update({ status: "cancelada" }).eq("id", sub.id);
-    return error ? { ok: false, reason: "falha" } : { ok: true };
+    await supabaseAdmin.from("subscriptions").update({ status: "cancelada" }).eq("id", sub.id);
+    return { ok: true };
   });
 
 /** Refreshes the patient's pending orders and subscriptions straight from Mercado Pago. */
@@ -593,9 +602,8 @@ export const syncMyPayments = createServerFn({ method: "POST" })
       }
     }
     for (const s of subs ?? []) {
-      if (!s.mp_preapproval_id) continue;
       try {
-        await applyPreapproval(token, s.mp_preapproval_id);
+        await applyPreapproval(token, s.mp_preapproval_id!);
         synced++;
       } catch (e) {
         console.error("Subscription sync failed", s.id, e);

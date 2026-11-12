@@ -6,7 +6,13 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart";
 import { CATEGORY_LABEL, formatPrice, hasActivePromo, type ShopProduct } from "@/lib/catalog";
 
-export function ShopProductCard({ product, lowStockAlert = 5 }: { product: ShopProduct; lowStockAlert?: number }) {
+export function ShopProductCard({
+  product,
+  lowStockAlert = 5,
+}: {
+  product: ShopProduct;
+  lowStockAlert?: number;
+}) {
   const cart = useCart();
   const navigate = useNavigate();
   const promo = hasActivePromo(product);
@@ -27,17 +33,23 @@ export function ShopProductCard({ product, lowStockAlert = 5 }: { product: ShopP
         />
         <div className="absolute left-3 top-3 flex flex-wrap gap-2">
           {promo && (
-            <span className="eyebrow rounded-full bg-copper px-3 py-1 text-copper-foreground">Promoção</span>
+            <span className="eyebrow rounded-full bg-copper px-3 py-1 text-copper-foreground">
+              Promoção
+            </span>
           )}
           {product.badge && (
-            <span className="eyebrow rounded-full bg-background/90 px-3 py-1 text-foreground">{product.badge}</span>
+            <span className="eyebrow rounded-full bg-background/90 px-3 py-1 text-foreground">
+              {product.badge}
+            </span>
           )}
         </div>
       </div>
       <div className="flex flex-1 flex-col p-5">
         <span className="eyebrow text-copper">{CATEGORY_LABEL[product.category]}</span>
         <h3 className="mt-2 text-xl leading-tight">{product.name}</h3>
-        <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{product.description}</p>
+        <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+          {product.description}
+        </p>
         <div className="mt-4 flex items-baseline gap-2">
           <p className="font-display text-3xl tracking-tight">
             {formatPrice(promo ? product.promoPrice! : product.price)}
@@ -62,7 +74,8 @@ export function ShopProductCard({ product, lowStockAlert = 5 }: { product: ShopP
             });
           }}
         >
-          <ShoppingBag /> {soldOut ? "Esgotado" : atLimit ? "Limite do estoque" : "Adicionar ao carrinho"}
+          <ShoppingBag />{" "}
+          {soldOut ? "Esgotado" : atLimit ? "Limite do estoque" : "Adicionar ao carrinho"}
         </Button>
       </div>
     </article>

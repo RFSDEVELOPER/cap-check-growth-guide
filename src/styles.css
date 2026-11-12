@@ -1,10 +1,15 @@
 /*
  * Tailwind v4 entry: config lives here, with no tailwind.config.js or PostCSS plugin.
- * Keep every @import in this top block. Web fonts load via <link> in src/routes/__root.tsx.
+ * Keep every @import in this top block. Web fonts are self-hosted through @fontsource packages (no request to Google).
  */
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import "@fontsource-variable/fraunces/opsz.css";
+@import "@fontsource-variable/fraunces/opsz-italic.css";
+@import "@fontsource-variable/instrument-sans/index.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -15,8 +20,8 @@
  */
 
 @theme inline {
-  --font-display: "Fraunces", ui-serif, Georgia, serif;
-  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces Variable", "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
   --radius-sm: calc(var(--radius) - 4px);
@@ -117,7 +122,8 @@
 
   --gradient-curve: linear-gradient(90deg, oklch(0.6 0.05 135), var(--copper));
   --gradient-forest: radial-gradient(120% 120% at 0% 0%, oklch(0.36 0.05 158), var(--forest) 60%);
-  --shadow-soft: 0 1px 2px oklch(0.22 0.025 150 / 6%), 0 12px 32px -12px oklch(0.22 0.025 150 / 18%);
+  --shadow-soft:
+    0 1px 2px oklch(0.22 0.025 150 / 6%), 0 12px 32px -12px oklch(0.22 0.025 150 / 18%);
   --shadow-lift: 0 24px 48px -20px oklch(0.27 0.04 160 / 35%);
 }
 

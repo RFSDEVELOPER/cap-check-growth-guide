@@ -1,12 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  Package,
-  RefreshCw,
-  ShieldCheck,
-  Star,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, Package, RefreshCw, ShieldCheck, Star, Sparkles } from "lucide-react";
 
 import heroImg from "@/assets/hero-cabelo.jpg";
 import {
@@ -35,7 +28,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "Cia Cap — Produtos capilares sem prescrição" },
       {
         property: "og:description",
-        content: "Produtos capilares sem prescrição e um questionário gratuito para conhecer sua rotina.",
+        content:
+          "Produtos capilares sem prescrição e um questionário gratuito para conhecer sua rotina.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -52,16 +46,44 @@ const TRUST = [
 ];
 
 const STEPS = [
-  { week: "Passo 1", title: "Sua rotina", text: "Responda ao questionário sobre seus hábitos e preferências de cuidados capilares." },
-  { week: "Passo 2", title: "Escolha", text: "Confira a composição, o modo de uso e as informações de cada produto na loja." },
-  { week: "Passo 3", title: "Entrega", text: "Finalize sua compra e acompanhe o status e o prazo do pedido na sua conta." },
-  { week: "Passo 4", title: "Cuidado diário", text: "Use os produtos conforme o rótulo e respeite as orientações e restrições de uso." },
+  {
+    week: "Passo 1",
+    title: "Sua rotina",
+    text: "Responda ao questionário sobre seus hábitos e preferências de cuidados capilares.",
+  },
+  {
+    week: "Passo 2",
+    title: "Escolha",
+    text: "Confira a composição, o modo de uso e as informações de cada produto na loja.",
+  },
+  {
+    week: "Passo 3",
+    title: "Entrega",
+    text: "Finalize sua compra e acompanhe o status e o prazo do pedido na sua conta.",
+  },
+  {
+    week: "Passo 4",
+    title: "Cuidado diário",
+    text: "Use os produtos conforme o rótulo e respeite as orientações e restrições de uso.",
+  },
 ];
 
 const TESTIMONIALS = [
-  { quote: "Dermocosméticos e tônicos podem fazer parte dos cuidados com os fios e o couro cabeludo, conforme a indicação de cada produto.", name: "Dermocosméticos e tônicos" },
-  { quote: "Escolha seu shampoo considerando a limpeza, as necessidades do couro cabeludo e as orientações de uso.", name: "Shampoos estimulantes" },
-  { quote: "Suplementos complementam a alimentação quando indicados e não substituem uma dieta equilibrada ou cuidados de saúde.", name: "Suplementos" },
+  {
+    quote:
+      "Dermocosméticos e tônicos podem fazer parte dos cuidados com os fios e o couro cabeludo, conforme a indicação de cada produto.",
+    name: "Dermocosméticos e tônicos",
+  },
+  {
+    quote:
+      "Escolha seu shampoo considerando a limpeza, as necessidades do couro cabeludo e as orientações de uso.",
+    name: "Shampoos estimulantes",
+  },
+  {
+    quote:
+      "Suplementos complementam a alimentação quando indicados e não substituem uma dieta equilibrada ou cuidados de saúde.",
+    name: "Suplementos",
+  },
 ];
 
 const FAQ = [
@@ -105,7 +127,8 @@ function Index() {
               Cuidados capilares sem prescrição
             </span>
             <h1 className="mt-6 text-[2.6rem] leading-[1.02] md:text-[4.2rem]">
-              Cia Cap: produtos para sua rotina <em className="font-light italic text-copper">capilar.</em>
+              Cia Cap: produtos para sua rotina{" "}
+              <em className="font-light italic text-copper">capilar.</em>
             </h1>
             <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg">
               Dermocosméticos, tônicos, shampoos estimulantes e suplementos sem prescrição médica.
@@ -142,7 +165,10 @@ function Index() {
               />
             </div>
             <div className="absolute -bottom-6 left-4 right-4 md:-left-10 md:right-auto md:w-72">
-              <div className="rounded-2xl border border-border bg-background/90 p-4 shadow-soft backdrop-blur"><p className="eyebrow text-muted-foreground">Sua rotina capilar</p><p className="mt-2 text-sm">Cuidados sem prescrição, no seu ritmo.</p></div>
+              <div className="rounded-2xl border border-border bg-background/90 p-4 shadow-soft backdrop-blur">
+                <p className="eyebrow text-muted-foreground">Sua rotina capilar</p>
+                <p className="mt-2 text-sm">Cuidados sem prescrição, no seu ritmo.</p>
+              </div>
             </div>
           </div>
         </section>
@@ -211,7 +237,8 @@ function Index() {
               <span className="eyebrow text-copper">Loja Cia Cap</span>
               <h2 className="mt-3 text-4xl md:text-5xl">Complete sua rotina</h2>
               <p className="mt-4 text-muted-foreground">
-                Dermocosméticos, tônicos, shampoos estimulantes e suplementos para complementar seus cuidados.
+                Dermocosméticos, tônicos, shampoos estimulantes e suplementos para complementar seus
+                cuidados.
               </p>
             </div>
             <Button asChild variant="pill-outline" size="xl" className="self-start md:self-auto">

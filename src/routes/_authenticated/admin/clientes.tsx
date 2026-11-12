@@ -25,14 +25,6 @@ export const Route = createFileRoute("/_authenticated/admin/clientes")({
       context.queryClient.ensureQueryData(adminSubscriptionsQuery),
       context.queryClient.ensureQueryData(adminPlansQuery),
     ]),
-  head: () => ({ meta: [
-    { title: "Clientes — Admin Cia Cap" },
-    { name: "description", content: "Clientes na administração da Cia Cap." },
-    { property: "og:title", content: "Clientes — Admin Cia Cap" },
-    { property: "og:description", content: "Clientes na administração da Cia Cap." },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
   component: Clientes,
 });
 

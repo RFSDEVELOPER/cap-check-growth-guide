@@ -1,7 +1,7 @@
 import { queryOptions, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ClipboardList, Loader2, LogOut, Package, Repeat } from "lucide-react";
+import { ClipboardList, Loader2, LogOut, Package, Repeat, ShieldCheck } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -26,7 +26,9 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { formatBRL } from "@/lib/catalog";
 import { storefrontQuery, useStorefront } from "@/lib/storefront";
+import { useAuth } from "@/lib/auth";
 import { useCart } from "@/lib/cart";
+import { dateBR } from "@/lib/dates";
 import {
   FULFILLMENT_LABEL,
   STATUS_LABEL,
@@ -105,8 +107,6 @@ const profileSchema = z.object({
     .trim()
     .regex(/^[A-Za-z]{2}$/, "UF com 2 letras"),
 });
-
-const dateBR = (iso: string) => new Date(iso).toLocaleDateString("pt-BR");
 
 function Conta() {
   const { data } = useSuspenseQuery(accountQuery);
@@ -256,6 +256,15 @@ function Conta() {
         </div>
 
         <div className="mt-6">
+          <Panel icon={ShieldCheck} title="Meus dados e privacidade">
+            <PrivacyPanel
+              hasQuiz={data.quiz.length > 0}
+              onDone={() => queryClient.invalidateQueries({ queryKey: ["account"] })}
+            />
+          </Panel>
+        </div>
+
+        <div className="mt-6">
           <Panel icon={Package} title="Meus pedidos">
             {data.orders.length ? (
               <ul className="divide-y divide-border">
@@ -322,6 +331,62 @@ function Conta() {
   );
 }
 
+/** LGPD controls: delete saved quiz answers and how to ask for account deletion or a data copy. */
+function PrivacyPanel({ hasQuiz, onDone }: { hasQuiz: boolean; onDone: () => void }) {
+  const { user } = useAuth();
+  const [busy, setBusy] = useState(false);
+
+  async function deleteQuiz() {
+    if (!user) return;
+    setBusy(true);
+    const { error } = await supabase.from("quiz_results").delete().eq("user_id", user.id);
+    setBusy(false);
+    if (error) {
+      toast.error("Não foi possível excluir agora. Tente novamente ou fale com o atendimento.");
+      return;
+    }
+    toast.success("Suas avaliações foram excluídas.");
+    onDone();
+  }
+
+  return (
+    <div className="grid gap-4 text-sm">
+      <p className="text-muted-foreground">
+        Você decide o que fica guardado. Suas respostas do questionário (informações sobre a saúde
+        do cabelo) só são salvas com o seu consentimento e podem ser excluídas a qualquer momento.
+        Para excluir a conta ou receber uma cópia dos seus dados, fale com o encarregado de dados
+        pelo contato da{" "}
+        <Link to="/privacidade" className="text-copper underline">
+          Política de Privacidade
+        </Link>
+        .
+      </p>
+      {hasQuiz && (
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="pill-outline" size="sm" className="justify-self-start" disabled={busy}>
+              {busy && <Loader2 className="animate-spin" />} Excluir minhas avaliações
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir todas as avaliações?</AlertDialogTitle>
+              <AlertDialogDescription>
+                As respostas salvas do questionário serão apagadas da sua conta. Essa ação não pode
+                ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Manter</AlertDialogCancel>
+              <AlertDialogAction onClick={deleteQuiz}>Excluir</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+    </div>
+  );
+}
+
 const RETRYABLE = ["pendente", "recusado", "cancelado"];
 
 const RETRY_ERRORS: Record<string, string> = {
@@ -347,10 +412,10 @@ function RetryPaymentButton({ orderId }: { orderId: string }) {
         window.location.href = res.url;
         return;
       }
-      toast.error(RETRY_ERRORS[res.error] ?? "Não foi possível abrir o pagamento agora. Tente novamente.");
+      toast.error(RETRY_ERRORS[res.error] ?? RETRY_ERRORS["falha"]!);
       if (res.error === "ja_pago") queryClient.invalidateQueries({ queryKey: ["account"] });
     } catch {
-      toast.error("Não foi possível abrir o pagamento agora. Tente novamente.");
+      toast.error(RETRY_ERRORS["falha"]!);
     }
     setBusy(false);
   }

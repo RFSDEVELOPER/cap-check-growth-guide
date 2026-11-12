@@ -1,12 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AlertTriangle, ArrowLeft, ArrowRight, Check, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { PENDING_QUIZ_KEY } from "@/lib/safe-redirect";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { PlanCard } from "@/components/site/PlanCard";
 import { ProductCard } from "@/components/site/ProductCard";
@@ -133,52 +135,90 @@ function Avaliacao() {
   );
 }
 
+/**
+ * Offers to save the quiz result. The answers are health information (LGPD, sensitive data), so
+ * nothing is stored, in the database or in this browser, until the person ticks the consent box.
+ */
 function SaveResult({ answers }: { answers: QuizAnswers }) {
   const { user, ready } = useAuth();
+  const navigate = useNavigate();
+  const [consent, setConsent] = useState(false);
   const [saved, setSaved] = useState(false);
-  const attempted = useRef(false);
+  const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    if (!ready || attempted.current) return;
-    attempted.current = true;
+  const buildRow = () => {
     const result = recommendPlan(answers);
-    const row = {
+    return {
       answers,
       plan: result.plan,
       score: result.score,
       needs_dermatologist: result.needsDermatologist,
     };
-    if (!user) {
-      localStorage.setItem(PENDING_QUIZ_KEY, JSON.stringify(row));
-      return;
-    }
-    supabase
+  };
+
+  async function saveToAccount() {
+    if (!consent || !user) return;
+    setBusy(true);
+    const { error } = await supabase
       .from("quiz_results")
-      .insert({ ...row, user_id: user.id })
-      .then(({ error }) => {
-        if (!error) setSaved(true);
-      });
-  }, [ready, user, answers]);
+      .insert({ ...buildRow(), user_id: user.id });
+    setBusy(false);
+    if (error) toast.error("Não foi possível salvar agora. Tente novamente.");
+    else setSaved(true);
+  }
+
+  function createAccountAndSave() {
+    if (!consent) return;
+    try {
+      localStorage.setItem(PENDING_QUIZ_KEY, JSON.stringify(buildRow()));
+    } catch {
+      /* storage blocked: the person can still create the account and redo the quiz */
+    }
+    navigate({ to: "/auth", search: { redirect: "/conta" } });
+  }
 
   if (!ready) return null;
-  if (user) {
-    return saved ? (
+  if (saved) {
+    return (
       <p className="mx-auto mt-6 flex max-w-md items-center justify-center gap-2 text-sm text-primary">
         <Check className="size-4" /> Resultado salvo na sua conta
       </p>
-    ) : null;
+    );
   }
+
   return (
-    <div className="mx-auto mt-8 flex max-w-2xl flex-col items-center gap-3 rounded-2xl bg-secondary/70 p-5 text-center text-sm sm:flex-row sm:text-left">
-      <p className="flex-1">
-        Crie sua conta para salvar suas respostas e consultar suas preferências de cuidados
-        capilares.
+    <div className="mx-auto mt-8 grid max-w-2xl gap-4 rounded-2xl bg-secondary/70 p-5 text-sm">
+      <p>
+        {user
+          ? "Quer guardar este resultado na sua conta para consultar depois?"
+          : "Crie sua conta para salvar suas respostas e consultar suas preferências de cuidados capilares."}
       </p>
-      <Button asChild variant="pill" className="shrink-0">
-        <Link to="/auth" search={{ redirect: "/conta" }}>
-          Salvar na minha conta
-        </Link>
-      </Button>
+      <label className="flex cursor-pointer items-start gap-3 text-left">
+        <Checkbox
+          checked={consent}
+          onCheckedChange={(v) => setConsent(v === true)}
+          className="mt-0.5"
+        />
+        <span className="leading-relaxed text-muted-foreground">
+          Autorizo a Cia Cap a guardar as minhas respostas, que são informações sobre a saúde do meu
+          cabelo, na minha conta. Posso excluí-las quando quiser. Veja a{" "}
+          <Link to="/privacidade" className="text-copper underline">
+            Política de Privacidade
+          </Link>
+          .
+        </span>
+      </label>
+      <div>
+        {user ? (
+          <Button variant="pill" onClick={saveToAccount} disabled={!consent || busy}>
+            Salvar na minha conta
+          </Button>
+        ) : (
+          <Button variant="pill" onClick={createAccountAndSave} disabled={!consent}>
+            Criar conta e salvar
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

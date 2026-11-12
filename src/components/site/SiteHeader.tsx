@@ -26,7 +26,13 @@ export function Logo() {
 function CartLink() {
   const { count } = useCart();
   return (
-    <Button asChild variant="ghost" size="icon" className="relative" aria-label={`Carrinho, ${count} itens`}>
+    <Button
+      asChild
+      variant="ghost"
+      size="icon"
+      className="relative"
+      aria-label={`Carrinho, ${count} itens`}
+    >
       <Link to="/carrinho">
         <ShoppingBag className="size-5" />
         {count > 0 && (
@@ -79,47 +85,47 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-1 md:hidden">
           <CartLink />
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Abrir menu">
-              <Menu className="size-5" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-[85%] bg-background">
-            <SheetTitle className="sr-only">Menu</SheetTitle>
-            <div className="mt-8 flex flex-col gap-1">
-              {NAV.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className="rounded-lg px-3 py-3 font-display text-2xl text-foreground hover:bg-secondary"
-                >
-                  {item.label}
-                </a>
-              ))}
-            </div>
-            <div className="mt-8 flex flex-col gap-3 px-3">
-              {isAdmin && (
-                <Button asChild variant="copper" size="xl">
-                  <Link to="/admin" onClick={() => setOpen(false)}>
-                    <LayoutDashboard /> Administração
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Abrir menu">
+                <Menu className="size-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[85%] bg-background">
+              <SheetTitle className="sr-only">Menu</SheetTitle>
+              <div className="mt-8 flex flex-col gap-1">
+                {NAV.map((item) => (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    className="rounded-lg px-3 py-3 font-display text-2xl text-foreground hover:bg-secondary"
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+              <div className="mt-8 flex flex-col gap-3 px-3">
+                {isAdmin && (
+                  <Button asChild variant="copper" size="xl">
+                    <Link to="/admin" onClick={() => setOpen(false)}>
+                      <LayoutDashboard /> Administração
+                    </Link>
+                  </Button>
+                )}
+                <Button asChild variant="pill" size="xl">
+                  <Link to="/avaliacao" onClick={() => setOpen(false)}>
+                    Fazer avaliação <ArrowRight />
                   </Link>
                 </Button>
-              )}
-              <Button asChild variant="pill" size="xl">
-                <Link to="/avaliacao" onClick={() => setOpen(false)}>
-                  Fazer avaliação <ArrowRight />
-                </Link>
-              </Button>
-              <Button asChild variant="pill-outline" size="xl">
-                <Link to={user ? "/conta" : "/auth"} onClick={() => setOpen(false)}>
-                  {user ? "Minha conta" : "Já sou cliente"}
-                </Link>
-              </Button>
-            </div>
-          </SheetContent>
-        </Sheet>
+                <Button asChild variant="pill-outline" size="xl">
+                  <Link to={user ? "/conta" : "/auth"} onClick={() => setOpen(false)}>
+                    {user ? "Minha conta" : "Já sou cliente"}
+                  </Link>
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>
