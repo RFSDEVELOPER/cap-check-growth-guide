@@ -136,10 +136,7 @@ async function applyPaymentObject(payment: MpPayment) {
   // A refund puts the items back in stock and gives the coupon use back (once per order).
   // The function comes from sql/etapa3-banco.sql; until it is applied the call only logs.
   if (status === "reembolsado" && order.status !== "reembolsado") {
-    const { error } = await db.rpc(
-      "restore_refunded_order",
-      { _order_id: order.id },
-    );
+    const { error } = await db.rpc("restore_refunded_order", { _order_id: order.id });
     if (error) console.error(`Stock restore failed for order ${order.id}`, error);
   }
 }
