@@ -381,12 +381,30 @@ export const startPlanSubscription = createServerFn({ method: "POST" })
       .limit(1);
     if (active && active.length > 0) return { error: "ja_assinante" };
 
-    // Abandoned attempts that never became active are closed, so only one stays open.
-    await adminDb
+    // Never leave an authorizable Mercado Pago agreement open while creating another.
+    const { data: stillPending } = await adminDb
       .from("subscriptions")
-      .update({ status: "cancelada" })
+      .select("id, mp_preapproval_id")
       .eq("user_id", context.userId)
       .eq("status", "pendente");
+    for (const sub of stillPending ?? []) {
+      if (sub.mp_preapproval_id) {
+        try {
+          await mpRequest(token, `/preapproval/${encodeURIComponent(sub.mp_preapproval_id)}`, {
+            method: "PUT",
+            body: { status: "cancelled" },
+          });
+        } catch {
+          return { error: "falha" };
+        }
+      }
+      const { error } = await adminDb
+        .from("subscriptions")
+        .update({ status: "cancelada" })
+        .eq("id", sub.id)
+        .eq("status", "pendente");
+      if (error) return { error: "falha" };
+    }
 
     const { data: profile } = await context.supabase
       .from("profiles")
@@ -564,8 +582,8 @@ export const cancelMySubscription = createServerFn({ method: "POST" })
         return { ok: false, reason: "falha" };
       }
     }
-    await supabaseAdmin.from("subscriptions").update({ status: "cancelada" }).eq("id", sub.id);
-    return { ok: true };
+    const { error } = await supabaseAdmin.from("subscriptions").update({ status: "cancelada" }).eq("id", sub.id);
+    return error ? { ok: false, reason: "falha" } : { ok: true };
   });
 
 /** Refreshes the patient's pending orders and subscriptions straight from Mercado Pago. */
