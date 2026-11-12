@@ -33,7 +33,9 @@ export function publicClient(): Client {
   });
 }
 
-async function signImages(client: Client, paths: string[]): Promise<Map<string, string>> {
+// Product photos and store settings are not readable by visitors directly; the server signs/reads them with the service client.
+async function signImages(paths: string[]): Promise<Map<string, string>> {
+  const { supabaseAdmin: client } = await import("@/integrations/supabase/client.server");
   const unique = [...new Set(paths.filter(Boolean))];
   const map = new Map<string, string>();
   if (unique.length === 0) return map;
@@ -64,7 +66,12 @@ export async function loadCatalog(
       .eq("active", true)
       .order("sort_order")
       .order("name"),
-    client.from("store_settings").select("*").maybeSingle(),
+    import("@/integrations/supabase/client.server").then(({ supabaseAdmin }) =>
+      supabaseAdmin
+        .from("store_settings")
+        .select("shipping_fee, free_shipping_min, low_stock_alert")
+        .maybeSingle(),
+    ),
   ]);
   for (const r of [plans, products, affiliates, settings]) {
     if (r.error) {
@@ -74,7 +81,7 @@ export async function loadCatalog(
   }
 
   const images = opts.withImages
-    ? await signImages(client, [
+    ? await signImages([
         ...(products.data ?? []).map((p) => p.image_url ?? ""),
         ...(affiliates.data ?? []).map((p) => p.image_url ?? ""),
       ])

@@ -43,6 +43,13 @@
       "when": 1794486943418,
       "tag": "0005_etapa4_quiz_delete",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794489880940,
+      "tag": "0006_restrict_store_settings_and_product_images",
+      "breakpoints": true
     }
   ]
 }
