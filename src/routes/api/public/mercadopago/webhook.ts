@@ -40,6 +40,15 @@ export const Route = createFileRoute("/api/public/mercadopago/webhook")({
         const rawId =
           body.data?.id ?? url.searchParams.get("data.id") ?? url.searchParams.get("id") ?? "";
         const dataId = String(rawId);
+        const notificationId =
+          url.searchParams.get("id") ?? request.headers.get("x-request-id") ?? "";
+        console.info("mp_webhook", {
+          topic: type.slice(0, 60),
+          notification_id: notificationId.slice(0, 64),
+          resource_id: dataId.slice(0, 64),
+        });
+        const KNOWN = ["payment", "subscription_preapproval", "preapproval", "merchant_order"];
+        if (!KNOWN.includes(type)) return new Response("ignored topic", { status: 200 });
         if (!/^[A-Za-z0-9_-]{1,64}$/.test(dataId)) return new Response("ignored", { status: 200 });
 
         const mp = await import("@/lib/mercadopago.server");
