@@ -54,7 +54,7 @@ export const adminSyncPayments = createServerFn({ method: "POST" })
 /** Cancels a patient's monthly plan on Mercado Pago and stores the new status. */
 export const adminCancelSubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .validator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

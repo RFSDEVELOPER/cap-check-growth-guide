@@ -45,11 +45,17 @@ const accountQuery = queryOptions({
     const { data: auth } = await supabase.auth.getUser();
     const uid = auth.user?.id;
     if (!uid) throw new Error("Sessão expirada");
-    const [profile, quiz, orders, subs] = await Promise.all([
+    const [profile, quiz, orders, subs, charges] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", uid).maybeSingle(),
       supabase.from("quiz_results").select("*").order("created_at", { ascending: false }).limit(5),
       supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(20),
       supabase.from("subscriptions").select("*").order("created_at", { ascending: false }).limit(5),
+      // RLS only returns this customer's own charges.
+      supabase
+        .from("subscription_payments")
+        .select("id, subscription_id, amount, status, paid_at, created_at")
+        .order("created_at", { ascending: false })
+        .limit(24),
     ]);
     return {
       email: auth.user?.email ?? "",
@@ -57,6 +63,7 @@ const accountQuery = queryOptions({
       quiz: quiz.data ?? [],
       orders: orders.data ?? [],
       subscriptions: subs.data ?? [],
+      charges: charges.data ?? [],
     };
   },
 });
@@ -200,24 +207,29 @@ function Conta() {
           <div className="grid content-start gap-6">
             <Panel icon={Repeat} title="Minha assinatura">
               {activeSub ? (
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="font-display text-2xl">Plano {planName(activeSub.plan_id)}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {formatBRL(Number(activeSub.amount))}/mês · desde{" "}
-                      {dateBR(activeSub.created_at)}
-                    </p>
+                <>
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="font-display text-2xl">Plano {planName(activeSub.plan_id)}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {formatBRL(Number(activeSub.amount))}/mês · desde{" "}
+                        {dateBR(activeSub.created_at)}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <StatusPill status={activeSub.status} />
+                      {["ativa", "pendente", "pausada"].includes(activeSub.status) && (
+                        <CancelSubscriptionButton
+                          id={activeSub.id}
+                          onDone={() => queryClient.invalidateQueries({ queryKey: ["account"] })}
+                        />
+                      )}
+                    </div>
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <StatusPill status={activeSub.status} />
-                    {["ativa", "pendente", "pausada"].includes(activeSub.status) && (
-                      <CancelSubscriptionButton
-                        id={activeSub.id}
-                        onDone={() => queryClient.invalidateQueries({ queryKey: ["account"] })}
-                      />
-                    )}
-                  </div>
-                </div>
+                  <ChargeHistory
+                    charges={data.charges.filter((c) => c.subscription_id === activeSub.id)}
+                  />
+                </>
               ) : (
                 <div>
                   <p className="text-muted-foreground">Você ainda não tem um plano.</p>
@@ -383,6 +395,43 @@ function PrivacyPanel({ hasQuiz, onDone }: { hasQuiz: boolean; onDone: () => voi
           </AlertDialogContent>
         </AlertDialog>
       )}
+    </div>
+  );
+}
+
+/** Monthly charges of the subscription, newest first. Empty until the first recurring charge arrives. */
+function ChargeHistory({
+  charges,
+}: {
+  charges: {
+    id: string;
+    amount: number;
+    status: string;
+    paid_at: string | null;
+    created_at: string;
+  }[];
+}) {
+  if (charges.length === 0) {
+    return (
+      <p className="mt-6 text-sm text-muted-foreground">
+        As cobranças mensais aparecem aqui após a primeira.
+      </p>
+    );
+  }
+  return (
+    <div className="mt-6">
+      <p className="eyebrow text-muted-foreground">Cobranças mensais</p>
+      <ul className="mt-3 divide-y divide-border text-sm">
+        {charges.map((c) => (
+          <li key={c.id} className="flex items-center justify-between py-2">
+            <span>{dateBR(c.paid_at ?? c.created_at)}</span>
+            <span className="flex items-center gap-3">
+              {formatBRL(Number(c.amount))}
+              <StatusPill status={c.status} />
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
