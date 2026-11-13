@@ -55,7 +55,7 @@ export const getSetupStatus = createServerFn({ method: "POST" })
 
 export const saveSecrets = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) =>
+  .validator((input) =>
     z
       .object({
         values: z

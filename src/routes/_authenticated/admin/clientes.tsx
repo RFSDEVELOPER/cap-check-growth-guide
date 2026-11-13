@@ -10,6 +10,7 @@ import {
   adminCustomersQuery,
   adminOrdersQuery,
   adminPlansQuery,
+  adminSubscriptionChargesQuery,
   adminSubscriptionsQuery,
   dateBR,
   type ProfileRow,
@@ -23,6 +24,7 @@ export const Route = createFileRoute("/_authenticated/admin/clientes")({
       context.queryClient.ensureQueryData(adminCustomersQuery),
       context.queryClient.ensureQueryData(adminOrdersQuery),
       context.queryClient.ensureQueryData(adminSubscriptionsQuery),
+      context.queryClient.ensureQueryData(adminSubscriptionChargesQuery),
       context.queryClient.ensureQueryData(adminPlansQuery),
     ]),
   component: Clientes,
@@ -123,9 +125,12 @@ function CustomerDetail({
   const { data: customers } = useSuspenseQuery(adminCustomersQuery);
   const { data: orders } = useSuspenseQuery(adminOrdersQuery);
   const { data: subs } = useSuspenseQuery(adminSubscriptionsQuery);
+  const { data: charges } = useSuspenseQuery(adminSubscriptionChargesQuery);
   const quiz = customers.quiz.filter((r) => r.user_id === profile.id);
   const myOrders = orders.filter((o) => o.user_id === profile.id);
   const mySubs = subs.filter((s) => s.user_id === profile.id);
+  const mySubIds = new Set(mySubs.map((s) => s.id));
+  const myCharges = charges.filter((c) => mySubIds.has(c.subscription_id));
 
   return (
     <div className="pb-10 text-sm">
@@ -165,6 +170,18 @@ function CustomerDetail({
                   {dateBR(s.created_at)}
                 </span>
                 <Pill tone={paymentTone(s.status)}>{STATUS_LABEL[s.status] ?? s.status}</Pill>
+              </li>
+            ))}
+          </ul>
+        )}
+        {myCharges.length > 0 && (
+          <ul className="mt-3 grid gap-1 text-muted-foreground">
+            {myCharges.map((c) => (
+              <li key={c.id} className="flex justify-between gap-2">
+                <span>
+                  Cobrança {dateBR(c.paid_at ?? c.created_at)} · {formatPrice(Number(c.amount))}
+                </span>
+                <Pill tone={paymentTone(c.status)}>{STATUS_LABEL[c.status] ?? c.status}</Pill>
               </li>
             ))}
           </ul>

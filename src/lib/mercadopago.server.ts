@@ -3,6 +3,7 @@ import {
   resolveOrderStatus,
   SUBSCRIPTION_STATUS_FROM_MP,
 } from "@/lib/checkout";
+import { pickSubscriptionId, subscriptionPaymentRow } from "@/lib/subscription-payments";
 
 const MP_API = "https://api.mercadopago.com";
 
@@ -75,6 +76,8 @@ interface MpPayment {
   external_reference: string | null;
   transaction_amount: number;
   currency_id: string;
+  preapproval_id?: string | null;
+  date_approved?: string | null;
 }
 
 interface MpPreapproval {
@@ -94,8 +97,41 @@ export async function applyPayment(token: string, paymentId: string) {
     token,
     `/v1/payments/${encodeURIComponent(paymentId)}`,
   );
+  await recordSubscriptionCharge(payment);
   if (!payment.external_reference) return;
   await applyPaymentObject(payment);
+}
+
+/**
+ * Stores a recurring (subscription) charge in subscription_payments so the customer and the admin
+ * see the monthly history. One-off order payments match no subscription and are left alone.
+ */
+async function recordSubscriptionCharge(payment: MpPayment) {
+  const db = await admin();
+  const candidates: { id: string; mp_preapproval_id: string | null }[] = [];
+  if (payment.external_reference) {
+    const { data } = await db
+      .from("subscriptions")
+      .select("id, mp_preapproval_id")
+      .eq("id", payment.external_reference)
+      .maybeSingle();
+    if (data) candidates.push(data);
+  }
+  if (payment.preapproval_id) {
+    const { data } = await db
+      .from("subscriptions")
+      .select("id, mp_preapproval_id")
+      .eq("mp_preapproval_id", payment.preapproval_id)
+      .maybeSingle();
+    if (data) candidates.push(data);
+  }
+  const subscriptionId = pickSubscriptionId(payment, candidates);
+  if (!subscriptionId) return;
+
+  const { error } = await db
+    .from("subscription_payments")
+    .upsert(subscriptionPaymentRow(payment, subscriptionId), { onConflict: "mp_payment_id" });
+  if (error) console.error(`Subscription charge ${payment.id} not stored`, error);
 }
 
 async function applyPaymentObject(payment: MpPayment) {

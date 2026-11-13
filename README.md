@@ -49,6 +49,7 @@ manuais ficam em `sql/`: aplique **na ordem** pelo Lovable ou pelo editor SQL do
 1. `sql/etapa3-banco.sql`: data do pagamento, aviso de estoque insuficiente, estorno devolvendo
    estoque, tabela de cobranças de assinatura e regras de validação.
 2. `sql/etapa4-banco.sql`: permite o cliente excluir as próprias avaliações (LGPD).
+3. `sql/etapa6-correcoes.sql`: valida as constraints pendentes e remove alegações médicas dos planos.
 
 Os scripts podem ser rodados mais de uma vez sem efeito colateral.
 

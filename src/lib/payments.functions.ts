@@ -97,7 +97,7 @@ const quoteCache = new Map<string, { at: number; options: ShippingOption[] | nul
 
 /** Quotes Correios and Jadlog for the cart by CEP (falls back to the fixed fee when not configured). */
 export const quoteShippingByCep = createServerFn({ method: "POST" })
-  .inputValidator((input) =>
+  .validator((input) =>
     z.object({ cep: z.string().max(12), items: cartSchema.shape.items }).parse(input),
   )
   .handler(async ({ data }): Promise<ShippingQuoteResult> => {
@@ -154,7 +154,7 @@ export type QuoteResult = { order: OrderDraft } | { error: CheckoutFailure; deta
 /** Prices the cart on the server (promo prices, stock, coupon and shipping). */
 export const quoteCart = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => cartSchema.extend({ cep: z.string().max(12).optional() }).parse(input))
+  .validator((input) => cartSchema.extend({ cep: z.string().max(12).optional() }).parse(input))
   .handler(async ({ data }): Promise<QuoteResult> => {
     try {
       return {
@@ -248,7 +248,7 @@ async function createOrderPreference(
 
 export const startCartCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => cartSchema.extend({ origin: originSchema }).parse(input))
+  .validator((input) => cartSchema.extend({ origin: originSchema }).parse(input))
   .handler(async ({ data, context }): Promise<CheckoutResult> => {
     const token = await getMpToken();
     if (!token) return { error: "pagamento_indisponivel" };
@@ -337,7 +337,7 @@ export const startCartCheckout = createServerFn({ method: "POST" })
 
 export const startPlanSubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) =>
+  .validator((input) =>
     z
       .object({ planId: z.enum(["essencial", "completo", "avancado"]), origin: originSchema })
       .parse(input),
@@ -476,9 +476,7 @@ const RETRY_WINDOW_MS = 24 * 60 * 60_000;
 /** Lets the patient pay again an order that is pending, refused or whose payment link failed. */
 export const retryOrderPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) =>
-    z.object({ orderId: z.string().uuid(), origin: originSchema }).parse(input),
-  )
+  .validator((input) => z.object({ orderId: z.string().uuid(), origin: originSchema }).parse(input))
   .handler(async ({ data, context }): Promise<RetryPaymentResult> => {
     const token = await getMpToken();
     if (!token) return { error: "pagamento_indisponivel" };
@@ -557,7 +555,7 @@ export type CancelSubscriptionResult =
 /** Lets the patient cancel their own subscription (stops future charges at Mercado Pago). */
 export const cancelMySubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .validator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<CancelSubscriptionResult> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: sub } = await supabaseAdmin

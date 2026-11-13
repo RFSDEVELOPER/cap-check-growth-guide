@@ -97,6 +97,18 @@ export const adminSubscriptionsQuery = queryOptions({
     ) ?? [],
 });
 
+export const adminSubscriptionChargesQuery = queryOptions({
+  queryKey: ["admin", "subscription-charges"],
+  queryFn: async () =>
+    must(
+      await supabase
+        .from("subscription_payments")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(500),
+    ) ?? [],
+});
+
 export const adminCustomersQuery = queryOptions({
   queryKey: ["admin", "customers"],
   queryFn: async () => {
