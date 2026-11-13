@@ -50,6 +50,13 @@
       "when": 1794489880940,
       "tag": "0006_restrict_store_settings_and_product_images",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794574218073,
+      "tag": "0007_validate_etapa3_constraints",
+      "breakpoints": true
     }
   ]
 }
