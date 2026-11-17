@@ -48,3 +48,4 @@ use the editor.
 - Imported archives are merged by semantic changes only; retain target dependencies and generated integrations to preserve the managed runtime and existing accounts.
 - Refund stock restoration uses recorded actual deductions and is idempotent; legacy orders without deductions require manual reconciliation to avoid inventing stock.
 - Payment retries use stored server-priced orders for at most 24 hours and verify payment and stock first; subscription replacement cancels pending provider agreements before creating another to avoid duplicate charges.
+- Define only the Cloud public URL and publishable key for both browser env access forms in Vite, with managed public defaults; this prevents missing build-time configuration from blanking the app without exposing server secrets or changing generated clients.
