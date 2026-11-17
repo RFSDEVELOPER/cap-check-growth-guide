@@ -22,9 +22,8 @@ const cloudBrowserConfig = {
 export default defineConfig({
   vite: {
     define: Object.fromEntries(
-      Object.entries(cloudBrowserConfig).flatMap(([name, value]) => [
-        [`import.meta.env.${name}`, JSON.stringify(value)],
-        [`import.meta.env['${name}']`, JSON.stringify(value)],
+      Object.entries(cloudBrowserConfig).map(([name, value]) => [
+        `import.meta.env.${name}`, JSON.stringify(value),
       ]),
     ),
   },
