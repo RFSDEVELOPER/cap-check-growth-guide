@@ -8,8 +8,25 @@
 // hosting already compresses at the edge.
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { loadEnv } from "vite";
+
+// Only public browser configuration belongs here. Never inject server credentials.
+// Keep the generated client's bracket-style reads defined in production as well.
+const publicEnv = loadEnv(process.env["NODE_ENV"] === "production" ? "production" : "development", process.cwd(), "VITE_");
+const cloudBrowserConfig = {
+  VITE_SUPABASE_URL: publicEnv["VITE_SUPABASE_URL"] || "https://xvmpwwealhpennxitbga.supabase.co",
+  VITE_SUPABASE_PUBLISHABLE_KEY:
+    publicEnv["VITE_SUPABASE_PUBLISHABLE_KEY"] || "sb_publishable_rEDAthqLK2dXHPXK94GFUw_UCBlUcHE",
+};
 
 export default defineConfig({
+  vite: {
+    define: Object.fromEntries(
+      Object.entries(cloudBrowserConfig).map(([name, value]) => [
+        `import.meta.env.${name}`, JSON.stringify(value),
+      ]),
+    ),
+  },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
