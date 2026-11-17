@@ -12,11 +12,11 @@ import { loadEnv } from "vite";
 
 // Only public browser configuration belongs here. Never inject server credentials.
 // Keep the generated client's bracket-style reads defined in production as well.
-const publicEnv = loadEnv(process.env.NODE_ENV === "production" ? "production" : "development", process.cwd(), "VITE_");
+const publicEnv = loadEnv(process.env["NODE_ENV"] === "production" ? "production" : "development", process.cwd(), "VITE_");
 const cloudBrowserConfig = {
-  VITE_SUPABASE_URL: publicEnv.VITE_SUPABASE_URL || "https://xvmpwwealhpennxitbga.supabase.co",
+  VITE_SUPABASE_URL: publicEnv["VITE_SUPABASE_URL"] || "https://xvmpwwealhpennxitbga.supabase.co",
   VITE_SUPABASE_PUBLISHABLE_KEY:
-    publicEnv.VITE_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_rEDAthqLK2dXHPXK94GFUw_UCBlUcHE",
+    publicEnv["VITE_SUPABASE_PUBLISHABLE_KEY"] || "sb_publishable_rEDAthqLK2dXHPXK94GFUw_UCBlUcHE",
 };
 
 export default defineConfig({
