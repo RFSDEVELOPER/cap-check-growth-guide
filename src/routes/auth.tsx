@@ -12,6 +12,7 @@ import { Logo } from "@/components/site/SiteHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth";
+import { buildCustomerRegistration } from "@/lib/customer-account";
 import { AFTER_LOGIN_KEY, safeRedirect } from "@/lib/safe-redirect";
 import { cn } from "@/lib/utils";
 
@@ -125,14 +126,8 @@ function AuthPage() {
     if (!parsed.success) return setErrors(fieldErrors(parsed.error.issues));
     setErrors({});
     setBusy(true);
-    const { data, error } = await supabase.auth.signUp({
-      email: parsed.data.email,
-      password: parsed.data.password,
-      options: {
-        emailRedirectTo: window.location.origin + "/auth",
-        data: { full_name: parsed.data.name, phone: parsed.data.phone },
-      },
-    });
+    const registration = buildCustomerRegistration(parsed.data, window.location.origin);
+    const { data, error } = await supabase.auth.signUp(registration.credentials);
     setBusy(false);
     if (error) return toast.error("Não foi possível criar a conta. Tente outro e-mail.");
     if (!data.session) setSentTo(parsed.data.email);

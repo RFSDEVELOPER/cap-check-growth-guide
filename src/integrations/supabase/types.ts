@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit: {
+        Row: {
+          acao: string
+          alvo_user_id: string
+          criado_em: string
+          feito_por: string
+          id: string
+        }
+        Insert: {
+          acao: string
+          alvo_user_id: string
+          criado_em?: string
+          feito_por: string
+          id?: string
+        }
+        Update: {
+          acao?: string
+          alvo_user_id?: string
+          criado_em?: string
+          feito_por?: string
+          id?: string
+        }
+        Relationships: []
+      }
       affiliate_products: {
         Row: {
           active: boolean
@@ -565,6 +589,10 @@ export type Database = {
       }
       restore_refunded_order: {
         Args: { _order_id: string }
+        Returns: undefined
+      }
+      revoke_admin: {
+        Args: { _actor_user_id: string; _target_user_id: string }
         Returns: undefined
       }
     }

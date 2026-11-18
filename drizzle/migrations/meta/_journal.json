@@ -57,6 +57,13 @@
       "when": 1794574218073,
       "tag": "0007_validate_etapa3_constraints",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794963609230,
+      "tag": "0008_create_admin_management",
+      "breakpoints": true
     }
   ]
 }

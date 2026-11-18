@@ -8,6 +8,7 @@ import {
   Package,
   Repeat,
   Settings,
+  ShieldCheck,
   Tag,
   Truck,
   Users,
@@ -50,6 +51,7 @@ const NAV = [
   { to: "/admin/planos", label: "Planos", icon: Repeat },
   { to: "/admin/assinaturas", label: "Assinaturas", icon: CreditCard },
   { to: "/admin/clientes", label: "Clientes", icon: Users },
+  { to: "/admin/administradores", label: "Administradores", icon: ShieldCheck },
   { to: "/admin/afiliados", label: "Links de afiliado", icon: Link2 },
   { to: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ] as const;

@@ -24,6 +24,7 @@ import { Route as TrocasRouteImport } from './routes/trocas'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/conta'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedAdminAdministradoresRouteImport } from './routes/_authenticated/admin/administradores'
 import { Route as AuthenticatedAdminAfiliadosRouteImport } from './routes/_authenticated/admin/afiliados'
 import { Route as AuthenticatedAdminAssinaturasRouteImport } from './routes/_authenticated/admin/assinaturas'
 import { Route as AuthenticatedAdminClientesRouteImport } from './routes/_authenticated/admin/clientes'
@@ -109,6 +110,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminAdministradoresRoute =
+  AuthenticatedAdminAdministradoresRouteImport.update({
+    id: '/administradores',
+    path: '/administradores',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminAfiliadosRoute =
   AuthenticatedAdminAfiliadosRouteImport.update({
     id: '/afiliados',
@@ -184,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/trocas': typeof TrocasRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/conta': typeof AuthenticatedContaRoute
+  '/admin/administradores': typeof AuthenticatedAdminAdministradoresRoute
   '/admin/afiliados': typeof AuthenticatedAdminAfiliadosRoute
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/admin/clientes': typeof AuthenticatedAdminClientesRoute
@@ -209,6 +217,7 @@ export interface FileRoutesByTo {
   '/termos': typeof TermosRoute
   '/trocas': typeof TrocasRoute
   '/conta': typeof AuthenticatedContaRoute
+  '/admin/administradores': typeof AuthenticatedAdminAdministradoresRoute
   '/admin/afiliados': typeof AuthenticatedAdminAfiliadosRoute
   '/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/admin/clientes': typeof AuthenticatedAdminClientesRoute
@@ -237,6 +246,7 @@ export interface FileRoutesById {
   '/trocas': typeof TrocasRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/conta': typeof AuthenticatedContaRoute
+  '/_authenticated/admin/administradores': typeof AuthenticatedAdminAdministradoresRoute
   '/_authenticated/admin/afiliados': typeof AuthenticatedAdminAfiliadosRoute
   '/_authenticated/admin/assinaturas': typeof AuthenticatedAdminAssinaturasRoute
   '/_authenticated/admin/clientes': typeof AuthenticatedAdminClientesRoute
@@ -265,6 +275,7 @@ export interface FileRouteTypes {
     | '/trocas'
     | '/admin'
     | '/conta'
+    | '/admin/administradores'
     | '/admin/afiliados'
     | '/admin/assinaturas'
     | '/admin/clientes'
@@ -290,6 +301,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/trocas'
     | '/conta'
+    | '/admin/administradores'
     | '/admin/afiliados'
     | '/admin/assinaturas'
     | '/admin/clientes'
@@ -317,6 +329,7 @@ export interface FileRouteTypes {
     | '/trocas'
     | '/_authenticated/admin'
     | '/_authenticated/conta'
+    | '/_authenticated/admin/administradores'
     | '/_authenticated/admin/afiliados'
     | '/_authenticated/admin/assinaturas'
     | '/_authenticated/admin/clientes'
@@ -453,6 +466,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/administradores': {
+      id: '/_authenticated/admin/administradores'
+      path: '/administradores'
+      fullPath: '/admin/administradores'
+      preLoaderRoute: typeof AuthenticatedAdminAdministradoresRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/afiliados': {
       id: '/_authenticated/admin/afiliados'
       path: '/afiliados'
@@ -527,6 +547,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminAdministradoresRoute: typeof AuthenticatedAdminAdministradoresRoute
   AuthenticatedAdminAfiliadosRoute: typeof AuthenticatedAdminAfiliadosRoute
   AuthenticatedAdminAssinaturasRoute: typeof AuthenticatedAdminAssinaturasRoute
   AuthenticatedAdminClientesRoute: typeof AuthenticatedAdminClientesRoute
@@ -541,6 +562,8 @@ interface AuthenticatedAdminRouteRouteChildren {
 
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
+    AuthenticatedAdminAdministradoresRoute:
+      AuthenticatedAdminAdministradoresRoute,
     AuthenticatedAdminAfiliadosRoute: AuthenticatedAdminAfiliadosRoute,
     AuthenticatedAdminAssinaturasRoute: AuthenticatedAdminAssinaturasRoute,
     AuthenticatedAdminClientesRoute: AuthenticatedAdminClientesRoute,

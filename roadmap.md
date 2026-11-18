@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Cadastro e gestão segura de administradores pelo painel, com convites, auditoria e proteção do último administrador
+
 - [x] Aplicar correções do arquivo etapa3, preservando contas/configurações, e verificar questionário, carrinho e segurança dos pagamentos
 
 - [x] Adaptar início, questionário, rodapé e FAQ para produtos capilares sem prescrição, sem promessas de telemedicina ou receitas

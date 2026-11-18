@@ -55,11 +55,13 @@ Os scripts podem ser rodados mais de uma vez sem efeito colateral.
 
 ## Primeiro uso em produção
 
-1. Crie sua conta pelo site e torne-a administradora, no editor SQL do Supabase:
+1. **Somente para o primeiro administrador**, crie sua conta pelo site e execute esta única linha no
+   editor SQL do banco no backend do projeto, trocando o e-mail pelo seu:
    ```sql
-   INSERT INTO public.user_roles (user_id, role)
-   SELECT id, 'admin' FROM auth.users WHERE email = 'seu@email.com';
+   INSERT INTO public.user_roles (user_id, role) SELECT id, 'admin' FROM auth.users WHERE email = 'seu@email.com' ON CONFLICT (user_id, role) DO NOTHING;
    ```
+   Depois disso, use **Admin → Administradores** para convidar ou remover administradores. Novos
+   convidados recebem acesso somente após confirmar o e-mail; o cadastro público cria só clientes.
 2. Em **Admin → Configurações → Pagamentos**: cole o token do Mercado Pago, o segredo do webhook e
    troque o modo para **produção**.
 3. No painel do Mercado Pago, cadastre o webhook `https://SEU-SITE/api/public/mercadopago/webhook`
