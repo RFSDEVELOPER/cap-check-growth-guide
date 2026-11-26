@@ -158,6 +158,14 @@ function Index() {
           </div>
         </section>
 
+        {/* Moment: type-led statement right after the hero (no claims) */}
+        <section className="container-site py-24 md:py-36">
+          <p className="max-w-4xl font-display text-5xl font-light leading-[1.05] text-balance md:text-7xl">
+            Uma rotina simples, com produtos{" "}
+            <em className="font-light italic text-copper">que você entende.</em>
+          </p>
+        </section>
+
         {/* Trust band */}
         <section className="bg-forest-glow text-forest-foreground">
           <div className="container-site grid grid-cols-2 gap-6 py-10 md:grid-cols-4">
@@ -245,17 +253,19 @@ function Index() {
           <div className="container-site">
             <span className="eyebrow text-copper">Cuidados capilares</span>
             <h2 className="mt-3 max-w-xl text-4xl md:text-5xl">Escolhas para o dia a dia</h2>
-            <div className="mt-12 grid gap-5 md:grid-cols-3">
+            <ul className="mt-12 divide-y divide-forest-foreground/15 border-y border-forest-foreground/15">
               {CATEGORIES.map((c) => (
-                <article
+                <li
                   key={c.name}
-                  className="rounded-3xl border border-forest-foreground/15 p-7"
+                  className="grid gap-3 py-7 md:grid-cols-[1fr_1.2fr] md:items-baseline md:gap-12"
                 >
-                  <h3 className="font-display text-2xl font-light leading-snug">{c.name}</h3>
-                  <p className="mt-4 text-sm leading-relaxed text-forest-foreground/75">{c.text}</p>
-                </article>
+                  <h3 className="font-display text-2xl font-light leading-snug md:text-3xl">
+                    {c.name}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-forest-foreground/75">{c.text}</p>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         </section>
 
