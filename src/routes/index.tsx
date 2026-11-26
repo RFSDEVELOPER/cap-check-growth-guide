@@ -210,7 +210,7 @@ function Index() {
             </div>
             <div className="mt-14 grid gap-6 md:grid-cols-3 md:items-stretch">
               {PLANS.map((p) => (
-                <PlanCard key={p.id} plan={p} productCopy />
+                <PlanCard key={p.id} plan={p} />
               ))}
             </div>
             <p className="mx-auto mt-8 max-w-lg text-center text-xs text-muted-foreground">
@@ -240,11 +240,22 @@ function Index() {
                 </Link>
               </Button>
             </div>
-            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {featuredProducts.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
-            </div>
+            {featuredProducts.length === 1 ? (
+              <div className="mt-12 grid gap-5 md:grid-cols-2 md:items-center lg:grid-cols-3">
+                {featuredProducts.map((p) => (
+                  <ProductCard key={p.id} product={p} />
+                ))}
+                <p className="hidden max-w-sm text-muted-foreground md:block lg:col-span-2">
+                  Mais indicações de lojas parceiras aparecem aqui conforme forem cadastradas.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {featuredProducts.map((p) => (
+                  <ProductCard key={p.id} product={p} />
+                ))}
+              </div>
+            )}
           </section>
         )}
 
