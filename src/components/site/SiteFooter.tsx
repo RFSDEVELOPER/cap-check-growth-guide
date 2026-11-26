@@ -11,9 +11,9 @@ export function SiteFooter() {
         <div className="max-w-sm">
           <Logo />
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            Dermocosméticos, tônicos, shampoos estimulantes e suplementos sem prescrição médica.
-            Siga as orientações do rótulo. Produtos não substituem cuidados de saúde e não garantem
-            resultados.
+            Dermocosméticos, tônicos, shampoos para o couro cabeludo e suplementos sem prescrição
+            médica. Siga as orientações do rótulo. Produtos não substituem cuidados de saúde e não
+            garantem resultados.
           </p>
         </div>
         <div className="text-sm">

@@ -88,14 +88,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Dermocosméticos, tônicos, shampoos estimulantes e suplementos para sua rotina capilar.",
+          "Dermocosméticos, tônicos, shampoos para o couro cabeludo e suplementos para sua rotina capilar.",
       },
       { name: "author", content: "Cia Cap" },
       { property: "og:title", content: "Cia Cap — Cuidados capilares sem prescrição" },
       {
         property: "og:description",
         content:
-          "Dermocosméticos, tônicos, shampoos estimulantes e suplementos para sua rotina capilar.",
+          "Dermocosméticos, tônicos, shampoos para o couro cabeludo e suplementos para sua rotina capilar.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

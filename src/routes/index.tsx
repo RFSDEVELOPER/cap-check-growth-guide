@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Package, RefreshCw, ShieldCheck, Star, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import heroImg from "@/assets/hero-cabelo.jpg";
 import {
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Dermocosméticos, tônicos, shampoos estimulantes e suplementos para sua rotina capilar. Conheça os produtos e responda ao questionário de preferências.",
+          "Dermocosméticos, tônicos, shampoos para o couro cabeludo e suplementos para sua rotina capilar. Conheça os produtos e responda ao questionário de preferências.",
       },
       { property: "og:title", content: "Cia Cap — Produtos capilares sem prescrição" },
       {
@@ -39,10 +39,10 @@ export const Route = createFileRoute("/")({
 });
 
 const TRUST = [
-  { icon: Sparkles, label: "Cuidados sem prescrição" },
-  { icon: ShieldCheck, label: "Dermocosméticos e suplementos" },
-  { icon: Package, label: "Entrega dos produtos em casa" },
-  { icon: RefreshCw, label: "Sem fidelidade" },
+  "Pagamento pelo Mercado Pago",
+  "Acompanhe o pedido na sua conta",
+  "Assinatura cancelável pela conta",
+  "Produtos sem prescrição médica",
 ];
 
 const STEPS = [
@@ -68,28 +68,25 @@ const STEPS = [
   },
 ];
 
-const TESTIMONIALS = [
+const CATEGORIES = [
   {
-    quote:
-      "Dermocosméticos e tônicos podem fazer parte dos cuidados com os fios e o couro cabeludo, conforme a indicação de cada produto.",
     name: "Dermocosméticos e tônicos",
+    text: "Produtos para o cuidado diário dos fios e do couro cabeludo, conforme a indicação de cada rótulo.",
   },
   {
-    quote:
-      "Escolha seu shampoo considerando a limpeza, as necessidades do couro cabeludo e as orientações de uso.",
-    name: "Shampoos estimulantes",
+    name: "Shampoos para o couro cabeludo",
+    text: "Escolha pela limpeza e pelas necessidades do seu couro cabeludo, seguindo as orientações de uso.",
   },
   {
-    quote:
-      "Suplementos complementam a alimentação quando indicados e não substituem uma dieta equilibrada ou cuidados de saúde.",
     name: "Suplementos",
+    text: "Complementam a alimentação quando indicados. Não substituem uma dieta equilibrada nem acompanhamento de saúde.",
   },
 ];
 
 const FAQ = [
   {
     q: "Preciso de receita médica para comprar?",
-    a: "Os produtos apresentados nesta proposta são dermocosméticos, tônicos, shampoos estimulantes e suplementos sem exigência de receita médica. Não oferecemos consultas por telemedicina nem emissão de receitas. Confira sempre a composição, a indicação e as restrições de cada produto.",
+    a: "Os produtos apresentados nesta proposta são dermocosméticos, tônicos, shampoos para o couro cabeludo e suplementos sem exigência de receita médica. Não oferecemos consultas por telemedicina nem emissão de receitas. Confira sempre a composição, a indicação e as restrições de cada produto.",
   },
   {
     q: "Como os produtos chegam até mim?",
@@ -105,15 +102,16 @@ const FAQ = [
   },
   {
     q: "O que encontro na loja?",
-    a: "Produtos Cia Cap e opções de lojas parceiras, incluindo dermocosméticos, tônicos, shampoos estimulantes e suplementos. Alguns links são de afiliados: podemos receber uma comissão, sem custo extra para você. Consulte o rótulo e as precauções de uso, especialmente para suplementos.",
+    a: "Produtos Cia Cap e opções de lojas parceiras, incluindo dermocosméticos, tônicos, shampoos para o couro cabeludo e suplementos. Alguns links são de afiliados: podemos receber uma comissão, sem custo extra para você. Consulte o rótulo e as precauções de uso, especialmente para suplementos.",
   },
 ];
 
 function Index() {
   const { plans: PLANS, affiliates: PRODUCTS } = useStorefront();
-  const featuredProducts = PRODUCTS.filter((p) => p.badge).concat(
-    PRODUCTS.filter((p) => !p.badge).slice(0, 1),
-  );
+  const withLink = PRODUCTS.filter((p) => !!p.url && p.url !== "#");
+  const featuredProducts = withLink
+    .filter((p) => p.badge)
+    .concat(withLink.filter((p) => !p.badge).slice(0, 1));
 
   return (
     <div className="min-h-screen">
@@ -131,8 +129,8 @@ function Index() {
               <em className="font-light italic text-copper">capilar.</em>
             </h1>
             <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg">
-              Dermocosméticos, tônicos, shampoos estimulantes e suplementos sem prescrição médica.
-              Escolha os cuidados que combinam com sua rotina.
+              Dermocosméticos, tônicos, shampoos para o couro cabeludo e suplementos sem prescrição
+              médica. Escolha os cuidados que combinam com sua rotina.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild variant="pill" size="xl">
@@ -144,14 +142,7 @@ function Index() {
                 <a href="#planos">Ver planos</a>
               </Button>
             </div>
-            <div className="mt-8 flex items-center gap-3 text-sm text-muted-foreground">
-              <div className="flex text-copper">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="size-4 fill-current" />
-                ))}
-              </div>
-              <span>Questionário sem cartão de crédito</span>
-            </div>
+            <p className="mt-8 text-sm text-muted-foreground">Questionário sem cartão de crédito</p>
           </div>
 
           <div className="relative animate-rise [animation-delay:150ms]">
@@ -164,23 +155,16 @@ function Index() {
                 className="aspect-[4/5] w-full object-cover md:aspect-[5/6]"
               />
             </div>
-            <div className="absolute -bottom-6 left-4 right-4 md:-left-10 md:right-auto md:w-72">
-              <div className="rounded-2xl border border-border bg-background/90 p-4 shadow-soft backdrop-blur">
-                <p className="eyebrow text-muted-foreground">Sua rotina capilar</p>
-                <p className="mt-2 text-sm">Cuidados sem prescrição, no seu ritmo.</p>
-              </div>
-            </div>
           </div>
         </section>
 
         {/* Trust band */}
         <section className="bg-forest-glow text-forest-foreground">
           <div className="container-site grid grid-cols-2 gap-6 py-10 md:grid-cols-4">
-            {TRUST.map(({ icon: Icon, label }) => (
-              <div key={label} className="flex items-center gap-3 text-sm">
-                <Icon className="size-5 shrink-0 text-copper" strokeWidth={1.75} />
-                <span>{label}</span>
-              </div>
+            {TRUST.map((label) => (
+              <p key={label} className="border-l border-copper/60 pl-4 text-sm">
+                {label}
+              </p>
             ))}
           </div>
         </section>
@@ -194,9 +178,9 @@ function Index() {
               Conheça as opções, escolha seus produtos e acompanhe a entrega pela sua conta.
             </p>
           </div>
-          <ol className="mt-12 grid gap-4 md:grid-cols-4">
+          <ol className="mt-12 grid gap-10 border-t border-border pt-10 md:grid-cols-4">
             {STEPS.map((s, i) => (
-              <li key={s.title} className="relative rounded-3xl border border-border bg-card p-6">
+              <li key={s.title}>
                 <span className="font-display text-5xl font-light text-copper/60">0{i + 1}</span>
                 <p className="eyebrow mt-4 text-muted-foreground">{s.week}</p>
                 <h3 className="mt-1 text-2xl">{s.title}</h3>
@@ -231,28 +215,30 @@ function Index() {
         </section>
 
         {/* Shop teaser */}
-        <section className="container-site py-20 md:py-28">
-          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-            <div className="max-w-xl">
-              <span className="eyebrow text-copper">Loja Cia Cap</span>
-              <h2 className="mt-3 text-4xl md:text-5xl">Complete sua rotina</h2>
-              <p className="mt-4 text-muted-foreground">
-                Dermocosméticos, tônicos, shampoos estimulantes e suplementos para complementar seus
-                cuidados.
-              </p>
+        {featuredProducts.length > 0 && (
+          <section className="container-site py-20 md:py-28">
+            <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+              <div className="max-w-xl">
+                <span className="eyebrow text-copper">Lojas parceiras</span>
+                <h2 className="mt-3 text-4xl md:text-5xl">Complete sua rotina</h2>
+                <p className="mt-4 text-muted-foreground">
+                  Indicações de lojas parceiras para complementar seus cuidados. Ao comprar, você
+                  finaliza o pedido na loja parceira, que cuida do pagamento e da entrega.
+                </p>
+              </div>
+              <Button asChild variant="pill-outline" size="xl" className="self-start md:self-auto">
+                <Link to="/loja">
+                  Ver a loja <ArrowRight />
+                </Link>
+              </Button>
             </div>
-            <Button asChild variant="pill-outline" size="xl" className="self-start md:self-auto">
-              <Link to="/loja">
-                Ver todos os produtos <ArrowRight />
-              </Link>
-            </Button>
-          </div>
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {featuredProducts.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        </section>
+            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {featuredProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Testimonials */}
         <section className="bg-forest-glow py-20 text-forest-foreground md:py-28">
@@ -260,15 +246,14 @@ function Index() {
             <span className="eyebrow text-copper">Cuidados capilares</span>
             <h2 className="mt-3 max-w-xl text-4xl md:text-5xl">Escolhas para o dia a dia</h2>
             <div className="mt-12 grid gap-5 md:grid-cols-3">
-              {TESTIMONIALS.map((t) => (
-                <figure key={t.name} className="rounded-3xl border border-forest-foreground/15 p-7">
-                  <blockquote className="font-display text-xl font-light leading-snug">
-                    “{t.quote}”
-                  </blockquote>
-                  <figcaption className="mt-6 flex items-center gap-2 text-sm text-forest-foreground/70">
-                    {t.name}
-                  </figcaption>
-                </figure>
+              {CATEGORIES.map((c) => (
+                <article
+                  key={c.name}
+                  className="rounded-3xl border border-forest-foreground/15 p-7"
+                >
+                  <h3 className="font-display text-2xl font-light leading-snug">{c.name}</h3>
+                  <p className="mt-4 text-sm leading-relaxed text-forest-foreground/75">{c.text}</p>
+                </article>
               ))}
             </div>
           </div>
