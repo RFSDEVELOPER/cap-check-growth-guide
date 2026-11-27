@@ -1,5 +1,14 @@
 /** Public pages listed in the sitemap. */
-export const PUBLIC_PATHS = ["/", "/loja", "/avaliacao", "/privacidade", "/termos", "/trocas"];
+export const PUBLIC_PATHS = [
+  "/",
+  "/loja",
+  "/avaliacao",
+  "/privacidade",
+  "/termos",
+  "/trocas",
+  "/sobre",
+  "/contato",
+];
 
 /** Areas that search engines should not crawl (private or transactional). */
 export const PRIVATE_PATHS = ["/admin", "/conta", "/auth", "/reset-password", "/carrinho", "/api/"];

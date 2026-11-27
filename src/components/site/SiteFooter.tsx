@@ -63,6 +63,16 @@ export function SiteFooter() {
                 Trocas e devoluções
               </Link>
             </li>
+            <li>
+              <Link to="/sobre" className="hover:text-copper">
+                Sobre
+              </Link>
+            </li>
+            <li>
+              <Link to="/contato" className="hover:text-copper">
+                Contato
+              </Link>
+            </li>
           </ul>
         </div>
       </div>

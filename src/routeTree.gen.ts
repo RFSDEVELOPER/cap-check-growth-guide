@@ -14,11 +14,13 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AvaliacaoRouteImport } from './routes/avaliacao'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
+import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as LojaRouteImport } from './routes/loja'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as TrocasRouteImport } from './routes/trocas'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
@@ -60,6 +62,11 @@ const CarrinhoRoute = CarrinhoRouteImport.update({
   path: '/carrinho',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContatoRoute = ContatoRouteImport.update({
+  id: '/contato',
+  path: '/contato',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LojaRoute = LojaRouteImport.update({
   id: '/loja',
   path: '/loja',
@@ -83,6 +90,11 @@ const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SobreRoute = SobreRouteImport.update({
+  id: '/sobre',
+  path: '/sobre',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermosRoute = TermosRouteImport.update({
@@ -182,11 +194,13 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/avaliacao': typeof AvaliacaoRoute
   '/carrinho': typeof CarrinhoRoute
+  '/contato': typeof ContatoRoute
   '/loja': typeof LojaRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/sobre': typeof SobreRoute
   '/termos': typeof TermosRoute
   '/trocas': typeof TrocasRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
@@ -209,11 +223,13 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/avaliacao': typeof AvaliacaoRoute
   '/carrinho': typeof CarrinhoRoute
+  '/contato': typeof ContatoRoute
   '/loja': typeof LojaRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/sobre': typeof SobreRoute
   '/termos': typeof TermosRoute
   '/trocas': typeof TrocasRoute
   '/conta': typeof AuthenticatedContaRoute
@@ -237,11 +253,13 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/avaliacao': typeof AvaliacaoRoute
   '/carrinho': typeof CarrinhoRoute
+  '/contato': typeof ContatoRoute
   '/loja': typeof LojaRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/sobre': typeof SobreRoute
   '/termos': typeof TermosRoute
   '/trocas': typeof TrocasRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
@@ -266,11 +284,13 @@ export interface FileRouteTypes {
     | '/auth'
     | '/avaliacao'
     | '/carrinho'
+    | '/contato'
     | '/loja'
     | '/privacidade'
     | '/reset-password'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/sobre'
     | '/termos'
     | '/trocas'
     | '/admin'
@@ -293,11 +313,13 @@ export interface FileRouteTypes {
     | '/auth'
     | '/avaliacao'
     | '/carrinho'
+    | '/contato'
     | '/loja'
     | '/privacidade'
     | '/reset-password'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/sobre'
     | '/termos'
     | '/trocas'
     | '/conta'
@@ -320,11 +342,13 @@ export interface FileRouteTypes {
     | '/auth'
     | '/avaliacao'
     | '/carrinho'
+    | '/contato'
     | '/loja'
     | '/privacidade'
     | '/reset-password'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/sobre'
     | '/termos'
     | '/trocas'
     | '/_authenticated/admin'
@@ -349,11 +373,13 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   AvaliacaoRoute: typeof AvaliacaoRoute
   CarrinhoRoute: typeof CarrinhoRoute
+  ContatoRoute: typeof ContatoRoute
   LojaRoute: typeof LojaRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  SobreRoute: typeof SobreRoute
   TermosRoute: typeof TermosRoute
   TrocasRoute: typeof TrocasRoute
   ApiPublicMercadopagoWebhookRoute: typeof ApiPublicMercadopagoWebhookRoute
@@ -396,6 +422,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CarrinhoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contato': {
+      id: '/contato'
+      path: '/contato'
+      fullPath: '/contato'
+      preLoaderRoute: typeof ContatoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/loja': {
       id: '/loja'
       path: '/loja'
@@ -429,6 +462,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sobre': {
+      id: '/sobre'
+      path: '/sobre'
+      fullPath: '/sobre'
+      preLoaderRoute: typeof SobreRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/termos': {
@@ -600,11 +640,13 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   AvaliacaoRoute: AvaliacaoRoute,
   CarrinhoRoute: CarrinhoRoute,
+  ContatoRoute: ContatoRoute,
   LojaRoute: LojaRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  SobreRoute: SobreRoute,
   TermosRoute: TermosRoute,
   TrocasRoute: TrocasRoute,
   ApiPublicMercadopagoWebhookRoute: ApiPublicMercadopagoWebhookRoute,
